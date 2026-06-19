@@ -1,0 +1,59 @@
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+*.egg
+*.whl
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Environment / Secrets ─────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ── Node / Frontend ───────────────────────────
+node_modules/
+dist/
+.cache/
+.parcel-cache/
+*.local
+
+# ── IDE / Editor ─────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────
+*.log
+
+# ── Alembic ───────────────────────────────────
+# (keep migrations/ tracked, only ignore compiled)
+
+# ── ML artifacts ─────────────────────────────
+ml-models/data/
+ml-models/checkpoints/
+*.pkl
+*.h5
+*.pt
+*.onnx
