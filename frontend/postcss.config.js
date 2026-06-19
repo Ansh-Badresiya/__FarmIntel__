@@ -1,7 +1,7 @@
-// postcss.config.js
+// postcss.config.js – Tailwind CSS v4 via @tailwindcss/postcss
 export default {
   plugins: {
-    tailwindcss: {},
+    '@tailwindcss/postcss': {},
     autoprefixer: {},
   },
 }
