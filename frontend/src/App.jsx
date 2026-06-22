@@ -31,10 +31,10 @@ function App() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-          AgriSubsidyAI
+          FarmIntel
         </h1>
         <p className="text-green-300 text-lg mb-8">
-          AI-powered agricultural subsidy management platform
+          AI-powered subsidy management platform
         </p>
 
         {/* Status Cards */}
@@ -90,3 +90,4 @@ function App() {
 }
 
 export default App
+

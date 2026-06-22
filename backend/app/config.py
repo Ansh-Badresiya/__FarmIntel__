@@ -1,5 +1,5 @@
 """
-AgriSubsidyAI – Configuration
+FarmIntel – Configuration
 Reads all settings from environment variables (or .env file).
 """
 
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment / .env file."""
 
     # ── Database ──────────────────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql://agri_user:agri_pass@localhost:5432/agrisubsidy_db"
+    DATABASE_URL: str = "postgresql://farmintel_user:farmintel_pass@localhost:5432/farmintel_db"
 
     # ── Security ──────────────────────────────────────────────────────────
     SECRET_KEY: str = "change-me-to-a-long-random-secret-key"
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # ── App metadata ──────────────────────────────────────────────────────
-    APP_NAME: str = "AgriSubsidyAI"
+    APP_NAME: str = "FarmIntel"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
 
@@ -34,3 +34,4 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return a cached Settings instance (singleton)."""
     return Settings()
+

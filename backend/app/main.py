@@ -1,5 +1,5 @@
 """
-AgriSubsidyAI – FastAPI Application Entry Point
+FarmIntel – FastAPI Application Entry Point
 """
 
 from fastapi import FastAPI
@@ -13,7 +13,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="AI-powered agricultural subsidy management platform",
+    description="FarmIntel – AI-powered subsidy management platform",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
@@ -51,3 +51,4 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     }
+

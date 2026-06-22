@@ -1,7 +1,7 @@
 /* ── Tailwind CSS v4 ──────────────────────────────────────────── */
 @import "tailwindcss";
 
-/* ── Theme: AgriSubsidyAI custom tokens ───────────────────────── */
+/* ── Theme: FarmIntel custom tokens ───────────────────────── */
 @theme {
   --color-primary-50:  #f0fdf4;
   --color-primary-100: #dcfce7;
@@ -30,3 +30,4 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
