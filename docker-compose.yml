@@ -5,7 +5,9 @@ services:
   db:
     image: postgres:14-alpine
     container_name: farmintel_db
+
     restart: unless-stopped
+
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-farmintel_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-farmintel_pass}
@@ -29,7 +31,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmintel.local}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmintel.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-pgadmin_pass}
     ports:
       - "5050:80"

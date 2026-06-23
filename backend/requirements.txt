@@ -3,6 +3,7 @@ uvicorn[standard]
 sqlalchemy
 pydantic
 pydantic-settings
+email-validator
 pyjwt
 python-dotenv
 psycopg2-binary
