@@ -1,7 +1,7 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import Callable, Any
+from typing import Callable, Any, Tuple
 from jwt.exceptions import PyJWTError
 
 from app.db.session import get_db
@@ -39,5 +39,18 @@ def require_role(required_role: UserRole) -> Callable[[User], User]:
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role != required_role:
             raise PermissionDenied(detail=f"Operation requires {required_role.value} privileges")
+        return current_user
+    return role_checker
+
+
+def require_any_role(*allowed_roles: UserRole) -> Callable[[User], User]:
+    """
+    Dependency factory that grants access if the user has ANY of the given roles.
+    Example: require_any_role(UserRole.officer, UserRole.admin)
+    """
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            roles_str = " or ".join(r.value for r in allowed_roles)
+            raise PermissionDenied(detail=f"Operation requires {roles_str} privileges")
         return current_user
     return role_checker
