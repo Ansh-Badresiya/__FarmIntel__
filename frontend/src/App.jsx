@@ -1,93 +1,60 @@
-import { useState } from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+
+// Pages & Components
+import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
+import { PrivateRoute } from './components/shared/PrivateRoute';
+import { DashboardLayout } from './components/layout/DashboardLayout';
+
+// Placeholder Pages for routing setup
+const Placeholder = ({ title }) => (
+  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+    <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
+    <p className="text-gray-600">This module will be built in the next iterations.</p>
+  </div>
+);
 
 function App() {
-  const [health, setHealth] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  const checkHealth = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/health`
-      )
-      const data = await res.json()
-      setHealth(data)
-    } catch {
-      setHealth({ status: 'error', message: 'Backend unreachable' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-950 via-green-900 to-emerald-800 flex flex-col items-center justify-center p-6 font-sans">
-      {/* Hero Card */}
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-10 max-w-2xl w-full text-center">
-        {/* Logo Mark */}
-        <div className="mb-6 flex justify-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-4xl">🌾</span>
-          </div>
-        </div>
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-          FarmIntel
-        </h1>
-        <p className="text-green-300 text-lg mb-8">
-          AI-powered subsidy management platform
-        </p>
+          {/* Protected Routes inside Dashboard Layout */}
+          <Route element={<DashboardLayout />}>
+            
+            {/* Farmer Routes */}
+            <Route element={<PrivateRoute allowedRoles={['farmer']} />}>
+              <Route path="/farmer/dashboard" element={<Placeholder title="Farmer Dashboard" />} />
+              <Route path="/farmer/applications" element={<Placeholder title="My Applications" />} />
+            </Route>
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <div className="text-2xl mb-1">⚡</div>
-            <div className="text-white font-semibold text-sm">Frontend</div>
-            <div className="text-green-400 text-xs mt-1">React + Vite + Tailwind</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <div className="text-2xl mb-1">🚀</div>
-            <div className="text-white font-semibold text-sm">Backend</div>
-            <div className="text-green-400 text-xs mt-1">FastAPI + PostgreSQL</div>
-          </div>
-        </div>
+            {/* Officer Routes */}
+            <Route element={<PrivateRoute allowedRoles={['officer', 'admin']} />}>
+              <Route path="/officer/dashboard" element={<Placeholder title="Officer Dashboard" />} />
+              <Route path="/officer/queue" element={<Placeholder title="Application Queue" />} />
+            </Route>
 
-        {/* Health Check Button */}
-        <button
-          onClick={checkHealth}
-          disabled={loading}
-          className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-green-500/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? '⏳ Checking...' : '🔍 Check Backend Health'}
-        </button>
+            {/* Admin Routes */}
+            <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+              <Route path="/admin/dashboard" element={<Placeholder title="Admin Dashboard" />} />
+              <Route path="/admin/schemes" element={<Placeholder title="Schemes Management" />} />
+              <Route path="/admin/users" element={<Placeholder title="User Management" />} />
+            </Route>
 
-        {/* Health Result */}
-        {health && (
-          <div className={`mt-4 p-4 rounded-xl text-sm font-mono ${
-            health.status === 'ok'
-              ? 'bg-green-500/20 border border-green-500/40 text-green-300'
-              : 'bg-red-500/20 border border-red-500/40 text-red-300'
-          }`}>
-            {JSON.stringify(health, null, 2)}
-          </div>
-        )}
+          </Route>
 
-        {/* Footer */}
-        <p className="mt-8 text-white/30 text-xs">
-          Module 1 – Project Setup Complete ✓
-        </p>
-      </div>
-
-      {/* Tech Pills */}
-      <div className="flex flex-wrap gap-2 mt-6 justify-center">
-        {['FastAPI', 'SQLAlchemy', 'Alembic', 'React 18', 'Vite', 'Tailwind CSS', 'PostgreSQL 14', 'JWT', 'Docker'].map(tech => (
-          <span key={tech} className="px-3 py-1 bg-white/10 border border-white/20 text-white/70 text-xs rounded-full backdrop-blur-sm">
-            {tech}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
 }
 
-export default App
-
+export default App;
