@@ -5,7 +5,7 @@ from typing import Any
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserOut
-from app.schemas.token import Token, TokenLogin
+from app.schemas.token import Token, TokenLogin, ChangePassword
 from app.core.security import hash_password, verify_password, create_access_token
 from app.api.dependencies import get_current_user
 
@@ -57,3 +57,27 @@ def read_current_user(current_user: User = Depends(get_current_user)) -> Any:
     Get current user profile.
     """
     return current_user
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    payload: ChangePassword,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    """
+    Change the password for the currently authenticated user.
+    Requires the current password to be provided for verification.
+    """
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+    if len(payload.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters long.",
+        )
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password changed successfully."}

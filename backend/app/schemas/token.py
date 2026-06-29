@@ -7,3 +7,7 @@ class Token(BaseModel):
 class TokenLogin(BaseModel):
     email: EmailStr
     password: str
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str

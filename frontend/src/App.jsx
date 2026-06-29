@@ -8,7 +8,18 @@ import { Register } from './pages/auth/Register';
 import { PrivateRoute } from './components/shared/PrivateRoute';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 
-// Placeholder Pages for routing setup
+// Farmer Pages
+import { Dashboard as FarmerDashboard } from './pages/Farmer/Dashboard';
+import { Profile as FarmerProfile } from './pages/Farmer/Profile';
+import { FarmDetails } from './pages/Farmer/FarmDetails';
+import { Subsidies as FarmerSubsidies } from './pages/Farmer/Subsidies';
+import { ApplySubsidy } from './pages/Farmer/ApplySubsidy';
+import { Applications as FarmerApplications } from './pages/Farmer/Applications';
+import { CropRecommendation } from './pages/Farmer/CropRecommendation';
+import { YieldPrediction } from './pages/Farmer/YieldPrediction';
+import { ChangePassword } from './pages/settings/ChangePassword';
+
+// Placeholder Pages for future modules
 const Placeholder = ({ title }) => (
   <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
     <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
@@ -30,8 +41,14 @@ function App() {
             
             {/* Farmer Routes */}
             <Route element={<PrivateRoute allowedRoles={['farmer']} />}>
-              <Route path="/farmer/dashboard" element={<Placeholder title="Farmer Dashboard" />} />
-              <Route path="/farmer/applications" element={<Placeholder title="My Applications" />} />
+              <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+              <Route path="/farmer/profile" element={<FarmerProfile />} />
+              <Route path="/farmer/farm" element={<FarmDetails />} />
+              <Route path="/farmer/subsidies" element={<FarmerSubsidies />} />
+              <Route path="/farmer/apply/:schemeId" element={<ApplySubsidy />} />
+              <Route path="/farmer/applications" element={<FarmerApplications />} />
+              <Route path="/farmer/crop-recommendation" element={<CropRecommendation />} />
+              <Route path="/farmer/yield-prediction" element={<YieldPrediction />} />
             </Route>
 
             {/* Officer Routes */}
@@ -45,6 +62,11 @@ function App() {
               <Route path="/admin/dashboard" element={<Placeholder title="Admin Dashboard" />} />
               <Route path="/admin/schemes" element={<Placeholder title="Schemes Management" />} />
               <Route path="/admin/users" element={<Placeholder title="User Management" />} />
+            </Route>
+
+            {/* Shared Settings Routes – accessible by ALL authenticated roles */}
+            <Route element={<PrivateRoute allowedRoles={['farmer', 'officer', 'admin']} />}>
+              <Route path="/settings/change-password" element={<ChangePassword />} />
             </Route>
 
           </Route>

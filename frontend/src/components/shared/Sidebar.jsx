@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, FileText, Settings, Users, Shield } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Users, Shield, Map, Leaf, UserCircle } from 'lucide-react';
 
 export const Sidebar = () => {
   const { user } = useAuth();
@@ -13,7 +13,12 @@ export const Sidebar = () => {
   const links = {
     farmer: [
       { to: '/farmer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { to: '/farmer/profile', label: 'My Profile', icon: UserCircle },
+      { to: '/farmer/farm', label: 'Farm Details', icon: Map },
+      { to: '/farmer/subsidies', label: 'Eligible Subsidies', icon: Shield },
       { to: '/farmer/applications', label: 'My Applications', icon: FileText },
+      { to: '/farmer/crop-recommendation', label: 'Crop ML', icon: Leaf },
+      { to: '/farmer/yield-prediction', label: 'Yield ML', icon: Settings }, // Using Settings icon temporarily or Sprout if imported
     ],
     officer: [
       { to: '/officer/dashboard', label: 'Overview', icon: LayoutDashboard },

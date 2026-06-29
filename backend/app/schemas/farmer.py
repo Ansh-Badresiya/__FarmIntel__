@@ -6,7 +6,9 @@ from typing import Optional
 class FarmerBase(BaseModel):
     aadhar_number: str
     age: Optional[int] = None
+    phone_number: Optional[str] = None
     village: Optional[str] = None
+    address: Optional[str] = None
     district: Optional[str] = None
     state: Optional[str] = None
     postal_code: Optional[str] = None
