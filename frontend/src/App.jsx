@@ -19,6 +19,11 @@ import { CropRecommendation } from './pages/Farmer/CropRecommendation';
 import { YieldPrediction } from './pages/Farmer/YieldPrediction';
 import { ChangePassword } from './pages/settings/ChangePassword';
 
+// Officer Pages
+import { OfficerDashboard } from './pages/Officer/Dashboard';
+import { ApplicationsList } from './pages/Officer/ApplicationsList';
+import { ApplicationReview } from './pages/Officer/ApplicationReview';
+
 // Placeholder Pages for future modules
 const Placeholder = ({ title }) => (
   <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -53,8 +58,9 @@ function App() {
 
             {/* Officer Routes */}
             <Route element={<PrivateRoute allowedRoles={['officer', 'admin']} />}>
-              <Route path="/officer/dashboard" element={<Placeholder title="Officer Dashboard" />} />
-              <Route path="/officer/queue" element={<Placeholder title="Application Queue" />} />
+              <Route path="/officer/dashboard" element={<OfficerDashboard />} />
+              <Route path="/officer/queue" element={<ApplicationsList />} />
+              <Route path="/officer/application/:applicationId" element={<ApplicationReview />} />
             </Route>
 
             {/* Admin Routes */}

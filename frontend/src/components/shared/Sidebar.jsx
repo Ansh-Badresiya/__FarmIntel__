@@ -1,7 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, FileText, Settings, Users, Shield, Map, Leaf, UserCircle } from 'lucide-react';
+import {
+  LayoutDashboard, FileText, Settings, Users, Shield,
+  Map, Leaf, UserCircle, ClipboardList,
+} from 'lucide-react';
 
 export const Sidebar = () => {
   const { user } = useAuth();
@@ -12,23 +15,23 @@ export const Sidebar = () => {
 
   const links = {
     farmer: [
-      { to: '/farmer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/farmer/profile', label: 'My Profile', icon: UserCircle },
-      { to: '/farmer/farm', label: 'Farm Details', icon: Map },
-      { to: '/farmer/subsidies', label: 'Eligible Subsidies', icon: Shield },
-      { to: '/farmer/applications', label: 'My Applications', icon: FileText },
-      { to: '/farmer/crop-recommendation', label: 'Crop ML', icon: Leaf },
-      { to: '/farmer/yield-prediction', label: 'Yield ML', icon: Settings }, // Using Settings icon temporarily or Sprout if imported
+      { to: '/farmer/dashboard',           label: 'Dashboard',         icon: LayoutDashboard },
+      { to: '/farmer/profile',             label: 'My Profile',        icon: UserCircle },
+      { to: '/farmer/farm',                label: 'Farm Details',      icon: Map },
+      { to: '/farmer/subsidies',           label: 'Eligible Subsidies',icon: Shield },
+      { to: '/farmer/applications',        label: 'My Applications',   icon: FileText },
+      { to: '/farmer/crop-recommendation', label: 'Crop ML',           icon: Leaf },
+      { to: '/farmer/yield-prediction',    label: 'Yield ML',          icon: Settings },
     ],
     officer: [
-      { to: '/officer/dashboard', label: 'Overview', icon: LayoutDashboard },
-      { to: '/officer/queue', label: 'Application Queue', icon: FileText },
+      { to: '/officer/dashboard', label: 'Overview',           icon: LayoutDashboard },
+      { to: '/officer/queue',     label: 'Application Queue',  icon: ClipboardList },
     ],
     admin: [
-      { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/admin/schemes', label: 'Schemes & Rules', icon: Shield },
-      { to: '/admin/users', label: 'User Management', icon: Users },
-    ]
+      { to: '/admin/dashboard', label: 'Dashboard',       icon: LayoutDashboard },
+      { to: '/admin/schemes',   label: 'Schemes & Rules', icon: Shield },
+      { to: '/admin/users',     label: 'User Management', icon: Users },
+    ],
   };
 
   const navLinks = links[role] || [];
