@@ -2,8 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  LayoutDashboard, FileText, Settings, Users, Shield,
-  Map, Leaf, UserCircle, ClipboardList,
+  LayoutDashboard, FileText, Users, Shield,
+  Map, Leaf, UserCircle, ClipboardList, Settings,
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -15,26 +15,28 @@ export const Sidebar = () => {
 
   const links = {
     farmer: [
-      { to: '/farmer/dashboard',           label: 'Dashboard',         icon: LayoutDashboard },
-      { to: '/farmer/profile',             label: 'My Profile',        icon: UserCircle },
-      { to: '/farmer/farm',                label: 'Farm Details',      icon: Map },
-      { to: '/farmer/subsidies',           label: 'Eligible Subsidies',icon: Shield },
-      { to: '/farmer/applications',        label: 'My Applications',   icon: FileText },
-      { to: '/farmer/crop-recommendation', label: 'Crop ML',           icon: Leaf },
-      { to: '/farmer/yield-prediction',    label: 'Yield ML',          icon: Settings },
+      { to: '/farmer/dashboard',           label: 'Dashboard',          icon: LayoutDashboard },
+      { to: '/farmer/profile',             label: 'My Profile',         icon: UserCircle },
+      { to: '/farmer/farm',                label: 'Farm Details',       icon: Map },
+      { to: '/farmer/subsidies',           label: 'Eligible Subsidies', icon: Shield },
+      { to: '/farmer/applications',        label: 'My Applications',    icon: FileText },
+      { to: '/farmer/crop-recommendation', label: 'Crop ML',            icon: Leaf },
+      { to: '/farmer/yield-prediction',    label: 'Yield ML',           icon: Settings },
     ],
     officer: [
-      { to: '/officer/dashboard', label: 'Overview',           icon: LayoutDashboard },
-      { to: '/officer/queue',     label: 'Application Queue',  icon: ClipboardList },
+      { to: '/officer/dashboard', label: 'Overview',          icon: LayoutDashboard },
+      { to: '/officer/queue',     label: 'Application Queue', icon: ClipboardList   },
     ],
     admin: [
-      { to: '/admin/dashboard', label: 'Dashboard',       icon: LayoutDashboard },
-      { to: '/admin/schemes',   label: 'Schemes & Rules', icon: Shield },
-      { to: '/admin/users',     label: 'User Management', icon: Users },
+      { to: '/admin/dashboard', label: 'Dashboard',        icon: LayoutDashboard },
+      { to: '/admin/schemes',   label: 'Schemes & Rules',  icon: Shield },
+      { to: '/admin/rules',     label: 'Eligibility Rules', icon: Settings },
+      { to: '/admin/users',     label: 'User Management',  icon: Users },
     ],
   };
 
   const navLinks = links[role] || [];
+
 
   return (
     <aside className="w-64 bg-gray-50 border-r border-gray-200 h-[calc(100vh-65px)] overflow-y-auto">

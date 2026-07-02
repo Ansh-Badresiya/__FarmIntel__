@@ -24,6 +24,12 @@ import { OfficerDashboard } from './pages/Officer/Dashboard';
 import { ApplicationsList } from './pages/Officer/ApplicationsList';
 import { ApplicationReview } from './pages/Officer/ApplicationReview';
 
+// Admin Pages
+import { AdminDashboard } from './pages/Admin/Dashboard';
+import { UsersPage } from './pages/Admin/Users';
+import { SchemesPage } from './pages/Admin/Schemes';
+import { RulesPage } from './pages/Admin/Rules';
+
 // Placeholder Pages for future modules
 const Placeholder = ({ title }) => (
   <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -65,9 +71,10 @@ function App() {
 
             {/* Admin Routes */}
             <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-              <Route path="/admin/dashboard" element={<Placeholder title="Admin Dashboard" />} />
-              <Route path="/admin/schemes" element={<Placeholder title="Schemes Management" />} />
-              <Route path="/admin/users" element={<Placeholder title="User Management" />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/users"     element={<UsersPage />} />
+              <Route path="/admin/schemes"   element={<SchemesPage />} />
+              <Route path="/admin/rules"     element={<RulesPage />} />
             </Route>
 
             {/* Shared Settings Routes – accessible by ALL authenticated roles */}

@@ -28,6 +28,8 @@ from app.schemas.subsidy_scheme import SubsidySchemeCreate, SubsidySchemeOut
 from app.schemas.eligibility_rule import EligibilityRuleCreate, EligibilityRuleOut
 from app.schemas.admin import SubsidySchemeUpdate, EligibilityRuleUpdate, UserRoleUpdate, DashboardStats
 from app.schemas.user import UserOut
+from app.models.subsidy_scheme import SubsidyScheme
+from app.models.eligibility_rule import EligibilityRule
 
 router = APIRouter(
     dependencies=[
@@ -44,6 +46,14 @@ def get_user_mgmt_service(db: Session = Depends(get_db)) -> UserManagementServic
 
 
 # ── Schemes ──────────────────────────────────────────────────────────────────
+
+@router.get("/schemes", response_model=List[SubsidySchemeOut])
+def list_schemes(
+    db: Session = Depends(get_db),
+) -> Any:
+    """List all subsidy schemes (active and inactive)."""
+    return db.query(SubsidyScheme).order_by(SubsidyScheme.created_at.desc()).all()
+
 
 @router.post("/scheme", response_model=SubsidySchemeOut, status_code=status.HTTP_201_CREATED)
 def create_scheme(
@@ -73,6 +83,18 @@ def delete_scheme(
 
 
 # ── Rules ────────────────────────────────────────────────────────────────────
+
+@router.get("/rules", response_model=List[EligibilityRuleOut])
+def list_rules(
+    scheme_id: Optional[UUID] = Query(None, description="Filter rules by scheme"),
+    db: Session = Depends(get_db),
+) -> Any:
+    """List all eligibility rules, optionally filtered by scheme."""
+    q = db.query(EligibilityRule)
+    if scheme_id:
+        q = q.filter(EligibilityRule.scheme_id == scheme_id)
+    return q.order_by(EligibilityRule.scheme_id, EligibilityRule.priority).all()
+
 
 @router.post("/rule", response_model=EligibilityRuleOut, status_code=status.HTTP_201_CREATED)
 def create_rule(
