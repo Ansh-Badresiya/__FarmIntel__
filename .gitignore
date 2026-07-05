@@ -57,3 +57,4 @@ ml-models/checkpoints/
 *.h5
 *.pt
 *.onnx
+*.joblib
