@@ -7,3 +7,4 @@ from .subsidy_scheme import SubsidyScheme
 from .eligibility_rule import EligibilityRule
 from .subsidy_application import SubsidyApplication
 from .ml_prediction import MLPrediction
+from .regional_soil_data import RegionalSoilData
