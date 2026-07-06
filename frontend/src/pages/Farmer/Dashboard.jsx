@@ -4,7 +4,7 @@ import { farmerService } from '../../services/farmerService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { FileText, Leaf, Sprout, ArrowRight } from 'lucide-react';
+import { FileText, Leaf, Sprout, ArrowRight, Brain } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const COLORS = ['#eab308', '#22c55e', '#ef4444']; // Pending, Approved, Rejected
@@ -56,7 +56,7 @@ export const Dashboard = () => {
       <ErrorAlert message={error} />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link to="/farmer/subsidies" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
           <div className="bg-green-100 p-3 rounded-lg mr-4">
             <FileText className="text-green-600 w-6 h-6" />
@@ -66,22 +66,13 @@ export const Dashboard = () => {
             <p className="text-sm text-gray-500">View eligible schemes</p>
           </div>
         </Link>
-        <Link to="/farmer/crop-recommendation" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
+        <Link to="/farmer/smart-recommendation" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
           <div className="bg-blue-100 p-3 rounded-lg mr-4">
-            <Leaf className="text-blue-600 w-6 h-6" />
+            <Brain className="text-blue-600 w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Crop Recommendation</h3>
-            <p className="text-sm text-gray-500">AI-powered suggestions</p>
-          </div>
-        </Link>
-        <Link to="/farmer/yield-prediction" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center hover:shadow-md transition-shadow">
-          <div className="bg-amber-100 p-3 rounded-lg mr-4">
-            <Sprout className="text-amber-600 w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Yield Prediction</h3>
-            <p className="text-sm text-gray-500">Estimate harvest</p>
+            <h3 className="font-semibold text-gray-900">Smart Crop ML</h3>
+            <p className="text-sm text-gray-500">AI-powered workflow</p>
           </div>
         </Link>
       </div>

@@ -1,19 +1,18 @@
 import api from './api';
 
 export const mlService = {
-  // Crop Recommendation
-  predictCrop: (data) => api.post('/farmer/crop-recommend', data),
-  
-  // Yield Prediction
-  predictYield: (data) => api.post('/farmer/yield-predict', data),
-  
-  // Get Soil Data Preview
-  getSoilDataPreview: (params) => {
-    // Convert object to query string
+  /**
+   * Unified recommendation — single call that runs Stage 1 + 2 + 3 on the backend.
+   * @param {{ state?: string, district?: string, season: string, year: number }} data
+   */
+  getRecommendation: (data) => api.post('/farmer/recommend', data),
+
+  // ── Legacy helpers (kept for any other callers) ──────────────────────────
+  predictCrop:       (data)   => api.post('/farmer/crop-recommend', data),
+  predictYield:      (data)   => api.post('/farmer/yield-predict', data),
+  getSoilDataPreview:(params) => {
     const queryStr = new URLSearchParams(params).toString();
     return api.get(`/farmer/soil-data-preview?${queryStr}`);
   },
-  
-  // Get Crop Input Data (profile + options)
-  getCropInputData: () => api.get('/farmer/crop-input-data')
+  getCropInputData: () => api.get('/farmer/crop-input-data'),
 };

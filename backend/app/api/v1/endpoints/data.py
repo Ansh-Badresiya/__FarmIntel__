@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from typing import List, Dict, Any
+from app.services.ml_service import _store
 
 router = APIRouter()
 
@@ -1080,25 +1081,25 @@ IRRIGATION_TYPES = [
 
 @router.get("/locations/states")
 def get_states() -> Dict[str, Any]:
-    return {"states": STATES}
+    _store.ensure_loaded()
+    states = sorted(_store.history_df["State"].unique().tolist())
+    return {"states": [{"id": s, "name": s} for s in states]}
 
 @router.get("/locations/districts")
 def get_districts(state: str) -> Dict[str, Any]:
-    found_districts = []
-    for st_name, dists in DISTRICTS.items():
-        if state.lower() == st_name.lower():
-            found_districts = dists
-            break
-        for s in STATES:
-            if s["id"].lower() == state.lower() and s["name"].lower() == st_name.lower():
-                found_districts = dists
-                break
-    return {"districts": found_districts or [{"id": "unknown", "name": "Default District"}]}
+    _store.ensure_loaded()
+    df = _store.history_df
+    # Case-insensitive match for the state
+    districts = sorted(df[df["State"].str.lower() == state.lower()]["District"].unique().tolist())
+    return {"districts": [{"id": d, "name": d} for d in districts]}
 
 @router.get("/locations/villages")
 def get_villages(district: str) -> Dict[str, Any]:
-    found_villages = VILLAGES.get(district, [])
-    return {"villages": found_villages or [{"id": "unknown", "name": "Default Village"}]}
+    # Mock villages for any requested district
+    return {"villages": [
+        {"id": "V1", "name": "Village 1"},
+        {"id": "V2", "name": "Village 2"}
+    ]}
 
 @router.get("/crops")
 def get_crops(season: str = None) -> Dict[str, Any]:

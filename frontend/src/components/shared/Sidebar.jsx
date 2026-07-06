@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard, FileText, Users, Shield,
-  Map, Leaf, UserCircle, ClipboardList, Settings,
+  Map, Leaf, UserCircle, ClipboardList, Settings, Brain
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -20,8 +20,7 @@ export const Sidebar = () => {
       { to: '/farmer/farm',                label: 'Farm Details',       icon: Map },
       { to: '/farmer/subsidies',           label: 'Eligible Subsidies', icon: Shield },
       { to: '/farmer/applications',        label: 'My Applications',    icon: FileText },
-      { to: '/farmer/crop-recommendation', label: 'Crop ML',            icon: Leaf },
-      { to: '/farmer/yield-prediction',    label: 'Yield ML',           icon: Settings },
+      { to: '/farmer/smart-recommendation',label: 'Smart ML',           icon: Brain },
     ],
     officer: [
       { to: '/officer/dashboard', label: 'Overview',          icon: LayoutDashboard },

@@ -39,30 +39,40 @@ _DATA_DIR     = _PROJECT_ROOT / "ml-models-v2" / "data" / "processed"
 # Lazy-loaded artifact registry
 # ─────────────────────────────────────────────────────────────────────────────
 
+import threading
+
 class _ArtifactStore:
     """
     Singleton that loads all ML artifacts exactly once on first access.
     Uses __slots__ so attribute access stays fast.
     """
     _instance: Optional[_ArtifactStore] = None
+    _lock = threading.Lock()
 
     def __new__(cls) -> _ArtifactStore:
         if cls._instance is None:
-            obj = super().__new__(cls)
-            obj._loaded = False
-            cls._instance = obj
+            with cls._lock:
+                if cls._instance is None:
+                    obj = super().__new__(cls)
+                    obj._loaded = False
+                    cls._instance = obj
         return cls._instance
 
     def _load(self) -> None:
         if self._loaded:
             return
 
-        logger.info("Loading ML artifacts from %s …", _MODELS_DIR)
+        with self._lock:
+            if self._loaded:
+                return
+
+            logger.info("Loading ML artifacts from %s …", _MODELS_DIR)
 
         # ── Stage 1 ───────────────────────────────────────────────────────────
         self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
         self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
         self.s1_lbl_enc = joblib.load(_MODELS_DIR / "label_encoder.pkl")
+
 
         with open(_MODELS_DIR / "crop_categories.json", encoding="utf-8") as f:
             self.s1_classes: List[str] = json.load(f)

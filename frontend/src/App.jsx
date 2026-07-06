@@ -15,8 +15,7 @@ import { FarmDetails } from './pages/Farmer/FarmDetails';
 import { Subsidies as FarmerSubsidies } from './pages/Farmer/Subsidies';
 import { ApplySubsidy } from './pages/Farmer/ApplySubsidy';
 import { Applications as FarmerApplications } from './pages/Farmer/Applications';
-import { CropRecommendation } from './pages/Farmer/CropRecommendation';
-import { YieldPrediction } from './pages/Farmer/YieldPrediction';
+import { SmartCropRecommendation } from './pages/Farmer/SmartCropRecommendation';
 import { ChangePassword } from './pages/settings/ChangePassword';
 
 // Officer Pages
@@ -58,8 +57,7 @@ function App() {
               <Route path="/farmer/subsidies" element={<FarmerSubsidies />} />
               <Route path="/farmer/apply/:schemeId" element={<ApplySubsidy />} />
               <Route path="/farmer/applications" element={<FarmerApplications />} />
-              <Route path="/farmer/crop-recommendation" element={<CropRecommendation />} />
-              <Route path="/farmer/yield-prediction" element={<YieldPrediction />} />
+              <Route path="/farmer/smart-recommendation" element={<SmartCropRecommendation />} />
             </Route>
 
             {/* Officer Routes */}
