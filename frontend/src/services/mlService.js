@@ -1,27 +1,19 @@
 import api from './api';
 
 export const mlService = {
-  predictCrop: async (data) => {
-    // In the future this will hit a real backend endpoint:
-    // return api.post('/ml/crop-recommend', data);
-    
-    // For now, simulating an API call and returning mock data
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ data: { recommendation: 'Wheat', confidence: 0.92 } });
-      }, 1500);
-    });
+  // Crop Recommendation
+  predictCrop: (data) => api.post('/farmer/crop-recommend', data),
+  
+  // Yield Prediction
+  predictYield: (data) => api.post('/farmer/yield-predict', data),
+  
+  // Get Soil Data Preview
+  getSoilDataPreview: (params) => {
+    // Convert object to query string
+    const queryStr = new URLSearchParams(params).toString();
+    return api.get(`/farmer/soil-data-preview?${queryStr}`);
   },
-
-  predictYield: async (data) => {
-    // In the future this will hit a real backend endpoint:
-    // return api.post('/ml/yield-predict', data);
-    
-    // For now, simulating an API call and returning mock data
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ data: { predicted_yield: 4.5, unit: 'tonnes/hectare' } });
-      }, 1500);
-    });
-  }
+  
+  // Get Crop Input Data (profile + options)
+  getCropInputData: () => api.get('/farmer/crop-input-data')
 };

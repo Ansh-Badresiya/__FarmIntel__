@@ -12,6 +12,7 @@ class FarmerBase(BaseModel):
     district: Optional[str] = None
     state: Optional[str] = None
     postal_code: Optional[str] = None
+    soil_type: Optional[str] = None
 
 class FarmerCreate(FarmerBase):
     user_id: UUID
