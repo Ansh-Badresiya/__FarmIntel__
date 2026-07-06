@@ -1,0 +1,50 @@
+{
+  "model_name": "FarmIntel-Stage2-YieldPrediction",
+  "algorithm": "RandomForestRegressor",
+  "training_date": "2026-07-07T00:11:07",
+  "feature_names": [
+    "State",
+    "District",
+    "Crop",
+    "Crop_Category",
+    "Season",
+    "Year"
+  ],
+  "target": "Yield",
+  "number_of_features": 6,
+  "train_samples": 271481,
+  "test_samples": 67871,
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": "None",
+    "min_samples_leaf": 3,
+    "n_jobs": -1,
+    "random_state": 42
+  },
+  "target_transform": "log1p (numpy) — predictions use expm1",
+  "metrics": {
+    "R2": 0.914926,
+    "RMSE": 265.0941,
+    "MAE": 15.0022,
+    "MAPE": 31.3271
+  },
+  "sklearn_version": "1.7.2",
+  "python_version": "3.10.10",
+  "encoding": {
+    "categorical_features": [
+      "State",
+      "District",
+      "Crop",
+      "Crop_Category",
+      "Season"
+    ],
+    "numerical_features": [
+      "Year"
+    ],
+    "encoder_type": "OrdinalEncoder",
+    "unknown_value": -1
+  },
+  "stage": 2,
+  "stage_description": "Predicts crop Yield (kg/ha) from State, District, Crop, Crop_Category, Season, Year.",
+  "notes": "Area and Production removed to prevent target leakage."
+}

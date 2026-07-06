@@ -1,0 +1,58 @@
+{
+  "model_name": "FarmIntel-Stage1-CropCategory",
+  "algorithm": "XGBoost",
+  "training_date": "2026-07-06T17:26:57Z",
+  "number_of_features": 4,
+  "feature_names": [
+    "State",
+    "District",
+    "Season",
+    "Year"
+  ],
+  "number_of_classes": 9,
+  "class_names": [
+    "Cash Crops",
+    "Cereals",
+    "Fiber Crops",
+    "Fruits",
+    "Oilseeds",
+    "Plantation Crops",
+    "Pulses",
+    "Spices",
+    "Vegetables"
+  ],
+  "top3_accuracy": 0.860003,
+  "test_accuracy": 0.380607,
+  "weighted_f1": 0.345447,
+  "macro_f1": 0.253281,
+  "sklearn_version": "1.7.2",
+  "xgboost_version": "3.2.0",
+  "python_version": "3.10.10",
+  "xgboost_params": {
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "max_depth": 7,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "eval_metric": "mlogloss",
+    "use_label_encoder": false,
+    "n_jobs": -1,
+    "random_state": 42,
+    "verbosity": 0
+  },
+  "encoding": {
+    "categorical_features": [
+      "State",
+      "District",
+      "Season"
+    ],
+    "numerical_features": [
+      "Year"
+    ],
+    "encoder_type": "OrdinalEncoder",
+    "unknown_value": -1
+  },
+  "stage": 1,
+  "stage_description": "Predicts Top-3 Crop Categories from State, District, Season, Year.",
+  "next_stage": "Stage 2 — within-category crop ranking by historical frequency."
+}

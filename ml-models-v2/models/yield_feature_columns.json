@@ -1,0 +1,20 @@
+{
+  "categorical_features": [
+    "State",
+    "District",
+    "Crop",
+    "Crop_Category",
+    "Season"
+  ],
+  "numerical_features": [
+    "Year"
+  ],
+  "feature_order": [
+    "State",
+    "District",
+    "Crop",
+    "Crop_Category",
+    "Season",
+    "Year"
+  ]
+}

@@ -1,0 +1,57 @@
+==============================================================
+  FARMINTEL STAGE-1 — CROP CATEGORY MODEL SELECTION SUMMARY
+==============================================================
+
+Task           : Multi-class Classification
+Target         : Crop_Category (9 classes)
+Classes        : ['Cash Crops', 'Cereals', 'Fiber Crops', 'Fruits', 'Oilseeds', 'Plantation Crops', 'Pulses', 'Spices', 'Vegetables']
+Features       : ['State', 'District', 'Season', 'Year']
+Train samples  : 276,261
+Test  samples  : 69,066
+CV Strategy    : StratifiedKFold (5 folds)
+Encoding       : OrdinalEncoder (cat) + numeric Year
+
+── All Models (ranked by selection priority) ──
+                 Model  Train Accuracy  CV Accuracy  Train Weighted F1  CV Weighted F1  CV Macro F1  Top-3 Accuracy  Accuracy Std  Weighted F1 Std  Macro F1 Std  Training Time
+1    Gradient Boosting        0.407321     0.374092           0.379562        0.344573     0.254695        0.859397      0.001256         0.000723      0.001415        3439.15
+2              XGBoost        0.402058     0.377270           0.369538        0.343074     0.252015        0.859278      0.001023         0.001544      0.002956         105.29
+3  Logistic Regression        0.324054     0.324056           0.233488        0.233479     0.132323        0.828731      0.000614         0.000950      0.000604         760.86
+4             CatBoost        0.277991     0.270559           0.291191        0.283852     0.259401        0.772081      0.001491         0.001680      0.001434         291.52
+5             LightGBM        0.309802     0.272416           0.322814        0.288289     0.252261        0.764256      0.001284         0.001729      0.001149         167.25
+6        Random Forest        0.383933     0.194892           0.397285        0.208413     0.167679        0.667984      0.001069         0.001161      0.000832         164.72
+7          Extra Trees        0.357888     0.179298           0.372526        0.194592     0.159369        0.651123      0.001158         0.001103      0.001180          94.81
+8        Decision Tree        0.345321     0.187138           0.359086        0.202077     0.169154        0.641480      0.001263         0.001344      0.001095           6.19
+
+── Best Model ──
+Name           : Gradient Boosting
+Top-3 Accuracy : 0.8594
+CV Accuracy    : 0.3741
+CV Macro F1    : 0.2547
+CV Weighted F1 : 0.3446
+Training Time  : 3439.15
+
+── Test Set Results (best model) ──
+        Metric  Score
+ Test Accuracy 0.3806
+Top-3 Accuracy 0.8600
+      Macro F1 0.2533
+   Weighted F1 0.3454
+
+── Per-Class F1 (test set) ──
+                  Precision  Recall     F1  Support
+Spices               0.3808  0.6006 0.4661     6245
+Cereals              0.3898  0.5313 0.4497    18387
+Pulses               0.3799  0.5396 0.4459    17499
+Cash Crops           0.5268  0.1996 0.2895     2901
+Vegetables           0.3572  0.1350 0.1959     6016
+Oilseeds             0.3425  0.1253 0.1834    13076
+Plantation Crops     0.2955  0.1060 0.1561     1377
+Fiber Crops          0.2317  0.0523 0.0854     2791
+Fruits               0.1304  0.0039 0.0075      774
+
+── Recommendations ──
+1. Proceed to Stage-2 using Gradient Boosting predictions.
+2. For each (State, District, Season, Year) input, extract
+   Top-3 predicted crop categories from predict_proba().
+3. Within each category, rank crops by historical frequency.
+==============================================================

@@ -1,0 +1,282 @@
+﻿CELL 0 markdown
+# ≡ƒôê Yield Prediction ΓÇö Model Selection
+**Task :** Regression ΓÇö predict `Yield` (kg/ha) from State, District, Crop, Season, Year, Area  
+**Data :** `yield_train.csv` / `yield_test.csv` (processed)  
+**Notebook :** `05_yield_model_selection.ipynb`
+
+### Strategy
+| Step | Detail |
+|------|--------|
+| Encoding | `OrdinalEncoder` for categorical features |
+| Target transform | `log1p(Yield)` ΓÇö right-skewed (found in EDA), inversed for metrics |
+| Selection | 5-fold KFold CV on **train set** ΓåÆ compare RMSE, MAE, R┬▓ |
+| Models | Linear Regression ┬╖ Ridge ┬╖ Lasso ┬╖ Decision Tree ┬╖ Random Forest ┬╖ Extra Trees ┬╖ Gradient Boosting ┬╖ XGBoost ┬╖ LightGBM |
+| Final eval | Best model evaluated on held-out **test set** |
+| Output | `yield_model_selection_summary.txt` written to `../outputs/` |
+---
+CELL 2 code
+import os, time, warnings
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import seaborn as sns
+warnings.filterwarnings('ignore')
+
+from sklearn.preprocessing   import OrdinalEncoder
+from sklearn.model_selection import KFold, cross_validate
+from sklearn.metrics         import (
+    mean_absolute_error, mean_squared_error, r2_score
+)
+
+# Regressors
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.tree         import DecisionTreeRegressor
+from sklearn.ensemble     import (
+    RandomForestRegressor, ExtraTreesRegressor,
+    GradientBoostingRegressor
+)
+try:
+    from xgboost  import XGBRegressor
+    XGB_AVAILABLE = True
+except ImportError:
+    XGB_AVAILABLE = False
+    print('ΓÜá∩╕Å  xgboost not installed ΓÇö skipping')
+
+try:
+    from lightgbm import LGBMRegressor
+    LGB_AVAILABLE = True
+except ImportError:
+    LGB_AVAILABLE = False
+    print('ΓÜá∩╕Å  lightgbm not installed ΓÇö skipping')
+
+# Dark plot theme
+plt.rcParams.update({
+    'figure.facecolor': '#0f0f1a', 'axes.facecolor': '#1a1a2e',
+    'axes.edgecolor': '#333355',   'axes.labelcolor': '#e0e0f0',
+    'text.color': '#e0e0f0',       'xtick.color': '#a0a0c0',
+    'ytick.color': '#a0a0c0',      'grid.color': '#2a2a4a',
+    'grid.linestyle': '--',        'grid.alpha': 0.5,
+    'font.size': 11,
+})
+ACCENT = '#7c3aed'; ACCENT2 = '#06b6d4'; HIGHLIGHT = '#f59e0b'
+GREEN  = '#10b981'; RED = '#f43f5e'
+RANDOM_STATE = 42
+print('Setup complete')
+---
+CELL 6 code
+CAT_FEATURES = ['State', 'District', 'Crop', 'Crop_Category', 'Season']
+NUM_FEATURES = ['Year',]
+FEATURES     = CAT_FEATURES + NUM_FEATURES
+TARGET       = 'Yield'
+
+# Ordinal-encode categoricals
+enc = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
+enc.fit(train[CAT_FEATURES])
+
+def prepare(df, encoder):
+    X_cat = encoder.transform(df[CAT_FEATURES])
+    X_num = df[NUM_FEATURES].values
+    X     = np.hstack([X_cat, X_num])
+    y     = df[TARGET].values
+    return X, y
+
+X_train, y_train = prepare(train, enc)
+X_test,  y_test  = prepare(test,  enc)
+
+# Log-transform target (EDA showed heavy right skew)
+y_train_log = np.log1p(y_train)
+y_test_log  = np.log1p(y_test)
+
+print(f'X_train : {X_train.shape}   X_test : {X_test.shape}')
+print(f'y_train log ΓåÆ mean={y_train_log.mean():.3f}, std={y_train_log.std():.3f}')
+---
+CELL 7 code
+# Verify log transform improves normality
+from scipy import stats
+fig, axes = plt.subplots(1, 2, figsize=(14, 4))
+axes[0].hist(y_train,     bins=80, color=RED,    edgecolor='none', alpha=0.85)
+axes[0].set_title(f'Yield (raw)  skew={stats.skew(y_train):.2f}', fontweight='bold')
+axes[0].set_xlabel('Yield (kg/ha)')
+axes[0].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'))
+
+axes[1].hist(y_train_log, bins=80, color=GREEN,  edgecolor='none', alpha=0.85)
+axes[1].set_title(f'log1p(Yield)  skew={stats.skew(y_train_log):.2f}', fontweight='bold')
+axes[1].set_xlabel('log(1 + Yield)')
+axes[1].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'))
+
+[ax.grid(True) for ax in axes]
+fig.suptitle('Target Distribution ΓÇö Before & After Log Transform', fontsize=13, fontweight='bold')
+plt.tight_layout()
+plt.show()
+---
+CELL 9 code
+from sklearn.model_selection import KFold
+
+def cv_evaluate(model, X, y_log, cv, name=''):
+    """Run KFold CV; compute metrics in ORIGINAL scale via expm1."""
+    rmse_list, mae_list, r2_list, mape_list = [], [], [], []
+    rmse_log_list = []
+
+    for fold_i, (tr_idx, val_idx) in enumerate(cv.split(X, y_log)):
+        X_tr, X_val = X[tr_idx], X[val_idx]
+        y_tr, y_val = y_log[tr_idx], y_log[val_idx]
+
+        model.fit(X_tr, y_tr)
+        y_pred_log = model.predict(X_val)
+
+        # Back-transform
+        y_pred_orig = np.expm1(y_pred_log)
+        y_val_orig  = np.expm1(y_val)
+
+        # Clip negatives (can happen with linear models)
+        y_pred_orig = np.clip(y_pred_orig, 0, None)
+
+        rmse_list.append(np.sqrt(mean_squared_error(y_val_orig, y_pred_orig)))
+        mae_list.append(mean_absolute_error(y_val_orig, y_pred_orig))
+        r2_list.append(r2_score(y_val_orig, y_pred_orig))
+        rmse_log_list.append(np.sqrt(mean_squared_error(y_val, y_pred_log)))
+
+        # MAPE (avoid div by zero)
+        nonzero = y_val_orig > 0
+        mape_list.append(
+            np.mean(np.abs((y_val_orig[nonzero] - y_pred_orig[nonzero]) / y_val_orig[nonzero])) * 100
+        )
+
+    return {
+        'RMSE':      np.mean(rmse_list),
+        'RMSE_std':  np.std(rmse_list),
+        'MAE':       np.mean(mae_list),
+        'MAE_std':   np.std(mae_list),
+        'R2':        np.mean(r2_list),
+        'R2_std':    np.std(r2_list),
+        'MAPE':      np.mean(mape_list),
+        'RMSE_log':  np.mean(rmse_log_list),
+    }
+
+print('Scorer defined')
+---
+CELL 13 code
+CV = KFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+results = {}
+
+for name, model in models.items():
+    print(f'Γû╢  {name} ...', end=' ', flush=True)
+    t0 = time.time()
+    metrics = cv_evaluate(model, X_train, y_train_log, CV, name)
+    elapsed = time.time() - t0
+    metrics['Time (s)'] = elapsed
+    results[name] = metrics
+    print(f'RMSE={metrics["RMSE"]:,.1f}  MAE={metrics["MAE"]:,.1f}  R┬▓={metrics["R2"]:.4f}  MAPE={metrics["MAPE"]:.2f}%  ({elapsed:.1f}s)')
+
+print('\n CV complete')
+---
+CELL 15 code
+res_df = pd.DataFrame(results).T
+res_df = res_df.sort_values('R2', ascending=False)
+
+display_cols = ['RMSE', 'RMSE_std', 'MAE', 'MAE_std', 'R2', 'R2_std', 'MAPE', 'RMSE_log', 'Time (s)']
+pd.set_option('display.float_format', '{:.4f}'.format)
+res_df[display_cols]
+---
+CELL 20 code
+best_name = res_df['R2'].idxmax()
+print(f'≡ƒÅå Best model by CV R┬▓ : {best_name}')
+print(f'   R┬▓   = {res_df.loc[best_name, "R2"]:.4f} ┬▒ {res_df.loc[best_name, "R2_std"]:.4f}')
+print(f'   RMSE = {res_df.loc[best_name, "RMSE"]:,.2f} ┬▒ {res_df.loc[best_name, "RMSE_std"]:,.2f}')
+print(f'   MAE  = {res_df.loc[best_name, "MAE"]:,.2f} ┬▒ {res_df.loc[best_name, "MAE_std"]:,.2f}')
+print(f'   MAPE = {res_df.loc[best_name, "MAPE"]:.2f}%')
+
+best_model = models[best_name]
+t0 = time.time()
+best_model.fit(X_train, y_train_log)
+print(f'\nFitted on full train in {time.time()-t0:.1f}s')
+---
+CELL 22 code
+y_pred_log  = best_model.predict(X_test)
+y_pred_orig = np.expm1(np.clip(y_pred_log, None, 15))  # clip extreme log vals
+
+test_rmse = np.sqrt(mean_squared_error(y_test, y_pred_orig))
+test_mae  = mean_absolute_error(y_test, y_pred_orig)
+test_r2   = r2_score(y_test, y_pred_orig)
+nonzero   = y_test > 0
+test_mape = np.mean(np.abs((y_test[nonzero] - y_pred_orig[nonzero]) / y_test[nonzero])) * 100
+
+print(f'=== {best_name} ΓÇö Test Set Results ===')
+print(f'  R┬▓         : {test_r2:.4f}')
+print(f'  RMSE       : {test_rmse:,.2f} kg/ha')
+print(f'  MAE        : {test_mae:,.2f} kg/ha')
+print(f'  MAPE       : {test_mape:.2f}%')
+---
+CELL 28 code
+feature_names = CAT_FEATURES + NUM_FEATURES
+
+if hasattr(best_model, 'feature_importances_'):
+    importances = best_model.feature_importances_
+    fi_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
+    fi_df = fi_df.sort_values('Importance', ascending=False)
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+    colors_fi = plt.cm.plasma(np.linspace(0.85, 0.2, len(fi_df)))
+    ax.barh(fi_df['Feature'][::-1], fi_df['Importance'][::-1],
+            color=colors_fi, edgecolor='none', height=0.6)
+    for i, v in enumerate(fi_df['Importance'].values[::-1]):
+        ax.text(v + 0.001, i, f'{v:.4f}', va='center', fontsize=10, color='#a0a0c0')
+    ax.set_xlabel('Feature Importance')
+    ax.set_title(f'{best_name} ΓÇö Feature Importances', fontsize=12, fontweight='bold', pad=10)
+    ax.grid(axis='x')
+    plt.tight_layout()
+    plt.show()
+
+    print('\nFeature Importance Table:')
+    print(fi_df.to_string(index=False))
+
+elif hasattr(best_model, 'coef_'):
+    fi_df = pd.DataFrame({'Feature': feature_names, 'Coefficient': best_model.coef_})
+    fi_df = fi_df.reindex(fi_df['Coefficient'].abs().sort_values(ascending=False).index)
+    print('Linear model coefficients:')
+    print(fi_df.to_string(index=False))
+else:
+    print('Feature importance not available.')
+---
+CELL 34 code
+os.makedirs('../outputs', exist_ok=True)
+
+summary = f"""
+========================================================
+  YIELD PREDICTION ΓÇö MODEL SELECTION SUMMARY
+========================================================
+Task            : Regression
+Target          : Yield (kg/ha)  [log-transformed for training]
+Features        : {FEATURES}
+Train samples   : {len(train):,}
+Test  samples   : {len(test):,}
+CV Strategy     : KFold (5 folds)
+Encoding        : OrdinalEncoder (categorical)
+
+--- CV Results (sorted by R┬▓) ---
+{res_df[['R2','R2_std','RMSE','RMSE_std','MAE','MAE_std','MAPE','Time (s)']].to_string()}
+
+--- Best Model ---
+Name            : {best_name}
+Test R┬▓         : {test_r2:.4f}
+Test RMSE       : {test_rmse:,.2f} kg/ha
+Test MAE        : {test_mae:,.2f} kg/ha
+Test MAPE       : {test_mape:.2f}%
+
+--- Recommendations ---
+1. Use {best_name} as the yield prediction model.
+2. Apply log1p transform on Yield before training.
+3. Apply expm1 to convert predictions back to kg/ha.
+4. Area and Crop are the most informative features (check FI above).
+5. Consider further hyperparameter tuning with Optuna.
+========================================================
+"""
+
+out_path = '../outputs/yield_model_selection_summary.txt'
+with open(out_path, 'w') as f:
+    f.write(summary)
+
+print(summary)
+print(f'Summary saved ΓåÆ {os.path.abspath(out_path)}')
+---
