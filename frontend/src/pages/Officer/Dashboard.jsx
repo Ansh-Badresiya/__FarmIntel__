@@ -15,6 +15,8 @@ import {
 /* ── helpers ────────────────────────────────────────────────────────────────── */
 const statusColor = {
   pending:  { bg: 'bg-yellow-50',  text: 'text-yellow-700',  border: 'border-yellow-200',  dot: 'bg-yellow-400'  },
+  under_verification: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
+  need_info: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500' },
   approved: { bg: 'bg-green-50',   text: 'text-green-700',   border: 'border-green-200',   dot: 'bg-green-500'   },
   rejected: { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200',     dot: 'bg-red-500'     },
 };
@@ -57,6 +59,8 @@ export const OfficerDashboard = () => {
   // Stats
   const total    = applications.length;
   const pending  = applications.filter(a => a.status === 'pending').length;
+  const verifying = applications.filter(a => a.status === 'under_verification').length;
+  const needInfo = applications.filter(a => a.status === 'need_info').length;
   const approved = applications.filter(a => a.status === 'approved').length;
   const rejected = applications.filter(a => a.status === 'rejected').length;
 
@@ -113,34 +117,36 @@ export const OfficerDashboard = () => {
       )}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           icon={Activity}
-          label="Total Applications"
+          label="Total"
           value={total}
-          accent={{ border: 'border-blue-100', iconBg: 'bg-blue-50', iconText: 'text-blue-600', valueText: 'text-blue-700' }}
-          sub="In your queue"
+          accent={{ border: 'border-gray-200', iconBg: 'bg-gray-100', iconText: 'text-gray-600', valueText: 'text-gray-800' }}
         />
         <StatCard
           icon={Clock}
-          label="Pending Review"
+          label="Pending"
           value={pending}
           accent={{ border: 'border-yellow-100', iconBg: 'bg-yellow-50', iconText: 'text-yellow-600', valueText: 'text-yellow-600' }}
-          sub="Awaiting decision"
+        />
+        <StatCard
+          icon={AlertCircle}
+          label="Action Needed"
+          value={needInfo}
+          accent={{ border: 'border-orange-100', iconBg: 'bg-orange-50', iconText: 'text-orange-600', valueText: 'text-orange-600' }}
         />
         <StatCard
           icon={CheckCircle}
           label="Approved"
           value={approved}
           accent={{ border: 'border-green-100', iconBg: 'bg-green-50', iconText: 'text-green-600', valueText: 'text-green-600' }}
-          sub="Successfully processed"
         />
         <StatCard
           icon={XCircle}
           label="Rejected"
           value={rejected}
           accent={{ border: 'border-red-100', iconBg: 'bg-red-50', iconText: 'text-red-600', valueText: 'text-red-600' }}
-          sub="Not eligible / incomplete"
         />
       </div>
 

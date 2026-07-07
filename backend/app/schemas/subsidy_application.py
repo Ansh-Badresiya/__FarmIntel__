@@ -19,7 +19,12 @@ class SubsidyApplicationOut(SubsidyApplicationBase):
     scheme_id: UUID
     application_date: datetime
     decision_date: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     assigned_officer: Optional[UUID] = None
+    inspection_status: Optional[str] = None
+    # Joined fields for convenience
+    scheme_name: Optional[str] = None
+    farmer_name: Optional[str] = None
 
     class Config:
         from_attributes = True

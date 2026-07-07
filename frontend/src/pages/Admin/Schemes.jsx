@@ -25,15 +25,25 @@ const SchemeFormModal = ({ scheme, onClose, onSaved }) => {
   const isEdit = !!scheme;
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm({
     defaultValues: isEdit ? {
-      scheme_name:       scheme.scheme_name,
-      description:       scheme.description || '',
-      subsidy_amount:    scheme.subsidy_amount,
-      is_active:         scheme.is_active,
+      scheme_name:           scheme.scheme_name,
+      description:           scheme.description || '',
+      subsidy_amount:        scheme.subsidy_amount,
+      is_active:             scheme.is_active,
+      max_beneficiaries:     scheme.max_beneficiaries || '',
+      application_deadline:  scheme.application_deadline
+        ? new Date(scheme.application_deadline).toISOString().slice(0, 10)
+        : '',
+      department:            scheme.department || '',
+      sector:                scheme.sector || '',
     } : {
-      scheme_name:    '',
-      description:    '',
-      subsidy_amount: '',
-      is_active:      true,
+      scheme_name:           '',
+      description:           '',
+      subsidy_amount:        '',
+      is_active:             true,
+      max_beneficiaries:     '',
+      application_deadline:  '',
+      department:            '',
+      sector:                '',
     },
   });
 
@@ -50,10 +60,14 @@ const SchemeFormModal = ({ scheme, onClose, onSaved }) => {
   const onSubmit = async (data) => {
     const payload = {
       ...data,
-      subsidy_amount:    parseFloat(data.subsidy_amount),
-      applicable_states: selectedStates,
+      subsidy_amount:     parseFloat(data.subsidy_amount),
+      max_beneficiaries:  data.max_beneficiaries ? parseInt(data.max_beneficiaries) : null,
+      applicable_states:  selectedStates,
       applicable_seasons: selectedSeasons,
-      is_active:         Boolean(data.is_active),
+      is_active:          Boolean(data.is_active),
+      application_deadline: data.application_deadline 
+        ? new Date(data.application_deadline).toISOString() 
+        : null,
     };
     try {
       if (isEdit) {
@@ -499,7 +513,15 @@ export const SchemesPage = () => {
                 <div className="px-5 pb-4 border-t border-gray-50 pt-3 space-y-2 text-xs text-gray-500">
                   <p><span className="font-semibold text-gray-700">ID:</span> <span className="font-mono">{scheme.id}</span></p>
                   <p><span className="font-semibold text-gray-700">Created:</span> {new Date(scheme.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                  <p><span className="font-semibold text-gray-700">Last updated:</span> {new Date(scheme.updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  {scheme.application_deadline && (
+                    <p className="text-orange-700 font-medium"><span>Deadline:</span>{' '}{new Date(scheme.application_deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  )}
+                  {scheme.max_beneficiaries && (
+                    <p><span className="font-semibold text-gray-700">Max Beneficiaries:</span> {scheme.max_beneficiaries.toLocaleString()}</p>
+                  )}
+                  {scheme.department && (
+                    <p><span className="font-semibold text-gray-700">Department:</span> {scheme.department}</p>
+                  )}
                   <p><span className="font-semibold text-gray-700">States ({scheme.applicable_states?.length || 0}):</span> {scheme.applicable_states?.join(', ') || '—'}</p>
                 </div>
               )}

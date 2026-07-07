@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from fastapi import HTTPException
 from typing import List, Optional
+from datetime import datetime, timezone
 
 from app.repositories.farmer_repo import (
     FarmerRepository, FarmRepository, CropHistoryRepository,
@@ -62,11 +63,39 @@ class FarmerService:
             raise HTTPException(status_code=400, detail="Farmer profile not found")
         
         farm = self.get_farm(farmer.id)
-        # We might still want to evaluate even if farm is None, depending on rules
-        
         all_schemes = self.scheme_repo.list_active_schemes()
         eligible = self.engine.get_eligible_schemes(farmer, farm, all_schemes)
         return eligible
+
+    def get_all_schemes_with_eligibility(self, user_id: UUID) -> List[dict]:
+        """Returns ALL active schemes along with eligibility status and reasons."""
+        farmer = self.get_profile(user_id)
+        farm = self.get_farm(farmer.id) if farmer else None
+        
+        all_schemes = self.scheme_repo.list_active_schemes()
+        existing_apps = []
+        if farmer:
+            existing_apps = self.application_repo.list_by_farmer_id(farmer.id)
+        
+        results = []
+        for scheme in all_schemes:
+            if not farmer:
+                is_eligible, reasons = False, ["Farmer profile incomplete. Please update your profile first."]
+            else:
+                is_eligible, reasons = self.engine.evaluate_scheme_with_reasons(scheme, farmer, farm)
+            
+            app = next((a for a in existing_apps if a.scheme_id == scheme.id), None)
+            
+            results.append({
+                "scheme": scheme,
+                "is_eligible": is_eligible,
+                "ineligible_reasons": reasons,
+                "already_applied": app is not None,
+                "application_id": app.id if app else None,
+                "application_status": app.status.value if app else None
+            })
+            
+        return results
 
     def apply_for_subsidy(self, user_id: UUID, app_data: SubsidyApplicationCreate) -> SubsidyApplication:
         farmer = self.get_profile(user_id)
@@ -76,8 +105,22 @@ class FarmerService:
         farm = self.get_farm(farmer.id)
         
         scheme = self.scheme_repo.get_by_id(app_data.scheme_id)
-        if not scheme:
-            raise HTTPException(status_code=404, detail="Subsidy scheme not found")
+        if not scheme or not scheme.is_active:
+            raise HTTPException(status_code=404, detail="Subsidy scheme not found or inactive")
+
+        # Check deadline
+        if scheme.application_deadline and scheme.application_deadline < datetime.now(tz=timezone.utc):
+            raise HTTPException(status_code=400, detail="Application deadline has passed")
+
+        # Check max beneficiaries
+        if scheme.max_beneficiaries:
+            # We would normally query a count of approved applications here
+            approved_count = self.db.query(SubsidyApplication).filter(
+                SubsidyApplication.scheme_id == scheme.id,
+                SubsidyApplication.status == "approved"
+            ).count()
+            if approved_count >= scheme.max_beneficiaries:
+                raise HTTPException(status_code=400, detail="Maximum beneficiaries reached for this scheme")
 
         # Check if already applied
         existing_apps = self.application_repo.list_by_farmer_id(farmer.id)
@@ -85,7 +128,7 @@ class FarmerService:
             raise HTTPException(status_code=400, detail="Already applied for this scheme")
 
         # Validate eligibility
-        is_eligible = self.engine.evaluate_scheme(scheme, farmer, farm)
+        is_eligible, _ = self.engine.evaluate_scheme_with_reasons(scheme, farmer, farm)
         if not is_eligible:
             raise HTTPException(status_code=403, detail="Not eligible for this scheme")
 
@@ -96,4 +139,8 @@ class FarmerService:
         farmer = self.get_profile(user_id)
         if not farmer:
             raise HTTPException(status_code=400, detail="Farmer profile not found")
-        return self.application_repo.list_by_farmer_id(farmer.id)
+        # Ensure scheme is loaded for the frontend
+        apps = self.application_repo.list_by_farmer_id(farmer.id)
+        for app in apps:
+            _ = app.scheme # Force lazy load
+        return apps

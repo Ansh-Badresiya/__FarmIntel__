@@ -81,6 +81,22 @@ def delete_scheme(
     """Soft delete a subsidy scheme (sets is_active=False)."""
     return service.delete_scheme(scheme_id)
 
+@router.post("/scheme/{scheme_id}/activate", response_model=SubsidySchemeOut)
+def activate_scheme(
+    scheme_id: UUID,
+    service: SubsidyService = Depends(get_subsidy_service)
+) -> Any:
+    """Activate a scheme."""
+    return service.update_scheme(scheme_id, SubsidySchemeUpdate(is_active=True))
+
+@router.post("/scheme/{scheme_id}/deactivate", response_model=SubsidySchemeOut)
+def deactivate_scheme(
+    scheme_id: UUID,
+    service: SubsidyService = Depends(get_subsidy_service)
+) -> Any:
+    """Deactivate a scheme."""
+    return service.update_scheme(scheme_id, SubsidySchemeUpdate(is_active=False))
+
 
 # ── Rules ────────────────────────────────────────────────────────────────────
 
@@ -141,6 +157,42 @@ def update_user_role(
     """Change a user's role."""
     return service.update_user_role(user_id, role_in)
 
+@router.get("/farmers", response_model=List[Any])
+def list_farmers(db: Session = Depends(get_db)):
+    """List all farmers (used for admin farmer management)."""
+    from app.models.farmer import Farmer
+    # Quick fix: returns a list of dictionaries with merged user and farmer details
+    farmers = db.query(Farmer).all()
+    result = []
+    for f in farmers:
+        result.append({
+            "id": f.id,
+            "full_name": f.user.full_name if f.user else "Unknown",
+            "email": f.user.email if f.user else "Unknown",
+            "phone_number": f.phone_number,
+            "district": f.district,
+            "is_verified": f.is_verified,
+            "created_at": f.created_at
+        })
+    return result
+
+@router.get("/applications", response_model=List[Any])
+def list_all_applications(db: Session = Depends(get_db)):
+    """List all applications (used for admin application management)."""
+    from app.models.subsidy_application import SubsidyApplication
+    apps = db.query(SubsidyApplication).order_by(SubsidyApplication.application_date.desc()).all()
+    result = []
+    for app in apps:
+        result.append({
+            "id": app.id,
+            "status": app.status,
+            "application_date": app.application_date,
+            "farmer_name": app.farmer.user.full_name if (app.farmer and app.farmer.user) else "Unknown",
+            "scheme_name": app.scheme.scheme_name if app.scheme else "Unknown",
+            "district": app.farmer.district if app.farmer else "Unknown",
+            "assigned_officer": app.assigned_officer_rel.full_name if app.assigned_officer_rel else "Unassigned"
+        })
+    return result
 
 # ── Dashboard ────────────────────────────────────────────────────────────────
 

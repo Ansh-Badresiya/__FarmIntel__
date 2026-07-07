@@ -27,3 +27,4 @@ class User(Base):
     farmer_profile = relationship("Farmer", back_populates="user", uselist=False)
     schemes_created = relationship("SubsidyScheme", back_populates="creator")
     assigned_applications = relationship("SubsidyApplication", back_populates="assigned_officer_rel")
+    notifications = relationship("Notification", back_populates="user", foreign_keys="Notification.user_id")

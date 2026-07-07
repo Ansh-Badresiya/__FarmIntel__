@@ -10,7 +10,7 @@ from sqlalchemy import func
 
 from app.models.subsidy_scheme import SubsidyScheme
 from app.models.eligibility_rule import EligibilityRule
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.farmer import Farmer
 from app.models.subsidy_application import SubsidyApplication, ApplicationStatus
 
@@ -111,17 +111,24 @@ class UserManagementService:
 
     def get_dashboard_stats(self) -> DashboardStats:
         total_farmers = self.db.query(func.count(Farmer.id)).scalar() or 0
-        total_schemes = self.db.query(func.count(SubsidyScheme.id)).filter(SubsidyScheme.is_active == True).scalar() or 0
+        total_officers = self.db.query(func.count(User.id)).filter(User.role == UserRole.officer).scalar() or 0
+        
+        total_schemes = self.db.query(func.count(SubsidyScheme.id)).scalar() or 0
+        active_schemes = self.db.query(func.count(SubsidyScheme.id)).filter(SubsidyScheme.is_active == True).scalar() or 0
         
         # Applications counts
         apps_pending = self.db.query(func.count(SubsidyApplication.id)).filter(SubsidyApplication.status == ApplicationStatus.pending).scalar() or 0
         apps_approved = self.db.query(func.count(SubsidyApplication.id)).filter(SubsidyApplication.status == ApplicationStatus.approved).scalar() or 0
         apps_rejected = self.db.query(func.count(SubsidyApplication.id)).filter(SubsidyApplication.status == ApplicationStatus.rejected).scalar() or 0
+        apps_need_info = self.db.query(func.count(SubsidyApplication.id)).filter(SubsidyApplication.status == ApplicationStatus.need_info).scalar() or 0
 
         return DashboardStats(
             total_farmers=total_farmers,
+            total_officers=total_officers,
             applications_pending=apps_pending,
             applications_approved=apps_approved,
             applications_rejected=apps_rejected,
-            total_schemes=total_schemes
+            applications_need_info=apps_need_info,
+            total_schemes=total_schemes,
+            active_schemes=active_schemes
         )

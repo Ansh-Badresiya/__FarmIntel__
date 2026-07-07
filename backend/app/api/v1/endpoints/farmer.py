@@ -19,7 +19,7 @@ from app.schemas.farmer import FarmerBase, FarmerOut
 from app.schemas.farm import FarmBase, FarmOut
 from app.schemas.crop_history import CropHistoryBase, CropHistoryOut
 from app.schemas.subsidy_application import SubsidyApplicationCreate, SubsidyApplicationOut
-from app.schemas.subsidy_scheme import SubsidySchemeOut
+from app.schemas.subsidy_scheme import SubsidySchemeOut, SchemeWithEligibilityOut
 from app.schemas.ml_prediction import (
     CropCategoryResponse,
     CropsByCategoryResponse,
@@ -131,8 +131,16 @@ def get_eligible_subsidies(
     current_user: User = Depends(get_current_user),
     service: FarmerService = Depends(get_farmer_service),
 ) -> Any:
-    """Get eligible subsidies for the farmer."""
+    """Get ONLY eligible subsidies for the farmer."""
     return service.get_eligible_subsidies(current_user.id)
+
+@router.get("/subsidies/all", response_model=List[SchemeWithEligibilityOut])
+def get_all_subsidies_with_eligibility(
+    current_user: User = Depends(get_current_user),
+    service: FarmerService = Depends(get_farmer_service),
+) -> Any:
+    """Get ALL active subsidies with eligibility status and reasons."""
+    return service.get_all_schemes_with_eligibility(current_user.id)
 
 
 class ApplicationRequest(BaseModel):

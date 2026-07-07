@@ -20,11 +20,15 @@ class ApplicationRepository:
     # ── Queries ───────────────────────────────────────────────────────────────
 
     def get_by_id(self, application_id: UUID) -> Optional[SubsidyApplication]:
-        """Fetch a single application with farmer and scheme eager-loaded."""
+        """Fetch a single application with farmer, scheme, user, and farms eager-loaded."""
+        from app.models.farmer import Farmer
         return (
             self.db.query(SubsidyApplication)
             .options(
-                joinedload(SubsidyApplication.farmer),
+                joinedload(SubsidyApplication.farmer)
+                    .joinedload(Farmer.user),
+                joinedload(SubsidyApplication.farmer)
+                    .joinedload(Farmer.farms),
                 joinedload(SubsidyApplication.scheme),
             )
             .filter(SubsidyApplication.id == application_id)

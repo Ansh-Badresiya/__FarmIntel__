@@ -7,12 +7,14 @@ import { ToastContainer, useToasts } from '../../components/shared/Toast';
 import {
   ArrowLeft, User, MapPin, Landmark, FileText,
   CheckCircle, XCircle, FolderUp, Clock, AlertCircle,
-  Calendar, ShieldCheck, Hash, ExternalLink,
+  Calendar, ShieldCheck, Hash, ExternalLink, RefreshCw, Sprout
 } from 'lucide-react';
 
 /* ── helpers ────────────────────────────────────────────────────────────────── */
 const statusMeta = {
   pending:  { label: 'Pending',  Icon: Clock,       bg: 'bg-yellow-50',  text: 'text-yellow-700', border: 'border-yellow-200' },
+  under_verification: { label: 'Verifying', Icon: RefreshCw, bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  need_info: { label: 'Action Required', Icon: AlertCircle, bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
   approved: { label: 'Approved', Icon: CheckCircle, bg: 'bg-green-50',   text: 'text-green-700',  border: 'border-green-200'  },
   rejected: { label: 'Rejected', Icon: XCircle,     bg: 'bg-red-50',     text: 'text-red-700',    border: 'border-red-200'    },
 };
@@ -32,6 +34,7 @@ const Section = ({ icon: Icon, title, children, accent = 'green' }) => {
     blue:   'bg-blue-50   text-blue-600   border-blue-100',
     purple: 'bg-purple-50 text-purple-600 border-purple-100',
     amber:  'bg-amber-50  text-amber-600  border-amber-100',
+    teal:   'bg-teal-50   text-teal-600   border-teal-100',
   };
   return (
     <div className={`bg-white rounded-2xl border ${colors[accent].split(' ')[2]} shadow-sm overflow-hidden`}>
@@ -106,10 +109,10 @@ export const ApplicationReview = () => {
     );
   }
 
-  const { farmer, scheme, status, application_date, decision_date, notes, documents } = application;
+  const { farmer, scheme, status, application_date, decision_date, notes, documents, farm } = application;
   const sm = statusMeta[status] || statusMeta.pending;
   const StatusIcon = sm.Icon;
-  const isPending = status === 'pending';
+  const isPending = status === 'pending' || status === 'under_verification';
 
   return (
     <>
@@ -153,8 +156,8 @@ export const ApplicationReview = () => {
             </p>
           </div>
 
-          {/* Action Buttons – only for pending */}
-          {isPending && (
+          {/* Action Buttons */}
+          {(isPending || status === 'need_info') && (
             <div className="flex gap-2 flex-wrap">
               <button
                 id="btn-approve"
@@ -172,7 +175,7 @@ export const ApplicationReview = () => {
                   rounded-xl hover:bg-amber-600 transition-colors shadow-sm"
               >
                 <FolderUp className="w-4 h-4" />
-                Request Docs
+                Need Info
               </button>
               <button
                 id="btn-reject"
@@ -187,8 +190,18 @@ export const ApplicationReview = () => {
           )}
         </div>
 
-        {/* Already processed notice */}
-        {!isPending && (
+        {/* Status Notice */}
+        {status === 'need_info' && (
+          <div className="flex items-start gap-3 bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-xl">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-orange-600" />
+            <div>
+              <p className="text-sm font-semibold">Waiting on farmer for additional information.</p>
+              <p className="text-sm mt-0.5">Note: {notes}</p>
+            </div>
+          </div>
+        )}
+
+        {status === 'approved' || status === 'rejected' ? (
           <div className={`flex items-start gap-3 px-4 py-3 rounded-xl border ${sm.bg} ${sm.border}`}>
             <StatusIcon className={`w-5 h-5 shrink-0 mt-0.5 ${sm.text}`} />
             <div>
@@ -204,18 +217,20 @@ export const ApplicationReview = () => {
               )}
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Farmer Info */}
-          <Section icon={User} title="Farmer Information" accent="blue">
-            <InfoRow label="Aadhar Number" value={farmer.aadhar_number} mono />
-            <InfoRow label="Age"           value={farmer.age} />
-            <InfoRow label="Village"       value={farmer.village} />
-            <InfoRow label="District"      value={farmer.district} />
-            <InfoRow label="State"         value={farmer.state} />
-            <InfoRow label="Postal Code"   value={farmer.postal_code} mono />
+          <Section icon={User} title="Farmer Profile" accent="blue">
+            <InfoRow label="Full Name"     value={farmer.user?.full_name} />
+            <InfoRow label="Aadhaar No"    value={farmer.aadhar_number} mono />
+            <InfoRow label="Father Name"   value={farmer.father_name} />
+            <InfoRow label="Category"      value={farmer.category} />
+            <InfoRow label="Gender"        value={farmer.gender} />
+            <InfoRow label="DOB / Age"     value={`${farmer.date_of_birth} (${farmer.age} years)`} />
+            <InfoRow label="Annual Income" value={farmer.annual_income ? `₹${farmer.annual_income.toLocaleString('en-IN')}` : null} />
+            <InfoRow label="Phone Number"  value={farmer.phone_number} mono />
             <InfoRow
               label="Verification"
               value={
@@ -226,10 +241,26 @@ export const ApplicationReview = () => {
             />
           </Section>
 
+          {/* Farm Info */}
+          <Section icon={Sprout} title="Farm & Cultivation Details" accent="teal">
+            {farm ? (
+              <>
+                <InfoRow label="Land Area"      value={`${farm.land_area} Hectares`} />
+                <InfoRow label="Ownership"      value={farm.ownership_type} />
+                <InfoRow label="Soil Type"      value={farm.soil_type} />
+                <InfoRow label="Irrigation"     value={farm.irrigation_type} />
+                <InfoRow label="Water Source"   value={farm.water_source} />
+                <InfoRow label="Crop Category"  value={farm.crop_category} />
+                <InfoRow label="Crop Type"      value={farm.crop_type} />
+              </>
+            ) : (
+              <p className="text-sm text-gray-400 italic py-3">No farm details provided.</p>
+            )}
+          </Section>
+
           {/* Scheme Info */}
           <Section icon={Landmark} title="Scheme Details" accent="purple">
             <InfoRow label="Scheme Name"   value={scheme.scheme_name} />
-            <InfoRow label="Scheme ID"     value={scheme.id} mono />
             <InfoRow label="Subsidy Amount"
               value={
                 <span className="text-lg font-bold text-green-700">
@@ -237,11 +268,15 @@ export const ApplicationReview = () => {
                 </span>
               }
             />
+            <InfoRow label="Scheme ID"     value={scheme.id} mono />
+            <InfoRow label="Sector"        value={scheme.sector} />
+            <InfoRow label="Department"    value={scheme.department} />
             <InfoRow label="Description"   value={scheme.description} />
           </Section>
 
           {/* Application Timeline */}
-          <Section icon={Calendar} title="Application Timeline" accent="green">
+          <Section icon={Calendar} title="Application Information" accent="green">
+            <InfoRow label="Application ID" value={application.id} mono />
             <InfoRow label="Application Date"
               value={new Date(application_date).toLocaleDateString('en-IN', {
                 day: 'numeric', month: 'long', year: 'numeric',
@@ -255,58 +290,22 @@ export const ApplicationReview = () => {
                   })
                 : null}
             />
-            <InfoRow label="Application ID" value={application.id} mono />
             <InfoRow label="Assigned Officer" value={application.assigned_officer || 'Unassigned'} mono />
           </Section>
 
-          {/* Notes */}
-          <Section icon={FileText} title="Officer Notes / Updates" accent="amber">
-            {notes ? (
-              <div className="bg-amber-50/60 border border-amber-100 rounded-xl px-4 py-3">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{notes}</p>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic py-3">No notes recorded yet.</p>
-            )}
-          </Section>
         </div>
 
-        {/* Documents Section */}
-        <Section icon={Hash} title="Uploaded Documents" accent="blue">
-          {documents && Object.keys(documents).length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
-              {Object.entries(documents).map(([key, url]) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  <div className="bg-blue-50 p-2 rounded-lg">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 capitalize">
-                      {key.replace(/_/g, ' ')}
-                    </p>
-                    {typeof url === 'string' && url.startsWith('http') ? (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1 mt-0.5"
-                      >
-                        View Document <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{String(url)}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
+        {/* Notes */}
+        <Section icon={FileText} title="Officer Notes / Remarks" accent="amber">
+          {notes ? (
+            <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{notes}</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 italic py-3">No documents uploaded for this application.</p>
+            <p className="text-sm text-gray-400 italic py-2">No remarks recorded yet.</p>
           )}
         </Section>
+
       </div>
     </>
   );

@@ -16,6 +16,7 @@ export const farmerService = {
 
   // Subsidies & Applications
   getSubsidies: () => api.get('/farmer/subsidies'),
+  getAllSubsidies: () => api.get('/farmer/subsidies/all'),
   getApplications: () => api.get('/farmer/applications'),
   applySubsidy: (scheme_id) => api.post('/farmer/apply', { scheme_id }),
 };

@@ -11,12 +11,16 @@ import {
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
   { value: 'pending',  label: 'Pending'  },
+  { value: 'under_verification', label: 'Verifying' },
+  { value: 'need_info', label: 'Action Required' },
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
 
 const statusMeta = {
   pending:  { label: 'Pending',  icon: Clock,         bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
+  under_verification: { label: 'Verifying', icon: RefreshCw, bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+  need_info: { label: 'Action Required', icon: AlertCircle, bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
   approved: { label: 'Approved', icon: CheckCircle,   bg: 'bg-green-100',  text: 'text-green-800',  border: 'border-green-200'  },
   rejected: { label: 'Rejected', icon: XCircle,       bg: 'bg-red-100',    text: 'text-red-800',    border: 'border-red-200'    },
 };
@@ -52,12 +56,20 @@ export const ApplicationsList = () => {
   const [sortField, setSortField]   = useState('application_date');
   const [sortDir,   setSortDir]     = useState('desc');
 
+  const [districtFilter, setDistrictFilter] = useState('');
+
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
     setError('');
     try {
-      const res = await officerService.getApplications();
+      // Build query string
+      const params = new URLSearchParams();
+      if (statusFilter) params.append('status', statusFilter);
+      if (search) params.append('search', search);
+      if (districtFilter) params.append('district', districtFilter);
+      
+      const res = await officerService.getApplications(params.toString());
       setApplications(res.data);
     } catch {
       setError('Failed to load applications. Please try again.');
@@ -65,22 +77,19 @@ export const ApplicationsList = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [statusFilter, search, districtFilter]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // Fetch when filters change (with debounce for search, but direct for simplicity here)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [fetchData]);
 
-  // Client-side filter + sort
+  // Client-side sort and date filter
   const filtered = applications
     .filter(a => {
-      if (statusFilter && a.status !== statusFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !a.id.toLowerCase().includes(q) &&
-          !a.farmer_id.toLowerCase().includes(q) &&
-          !a.scheme_id.toLowerCase().includes(q)
-        ) return false;
-      }
       if (dateFrom && new Date(a.application_date) < new Date(dateFrom)) return false;
       if (dateTo   && new Date(a.application_date) > new Date(dateTo + 'T23:59:59')) return false;
       return true;
@@ -146,10 +155,22 @@ export const ApplicationsList = () => {
             <input
               type="text"
               id="app-search"
-              placeholder="Search by Application ID, Farmer ID, or Scheme ID…"
+              placeholder="Search by Farmer Name, ID..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl
+                focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+            />
+          </div>
+
+          {/* District filter */}
+          <div className="relative flex-1 max-w-[200px]">
+            <input
+              type="text"
+              placeholder="District..."
+              value={districtFilter}
+              onChange={e => setDistrictFilter(e.target.value)}
+              className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl
                 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
             />
           </div>
@@ -224,8 +245,8 @@ export const ApplicationsList = () => {
               <tr>
                 {[
                   { field: 'id',               label: 'Application ID' },
-                  { field: 'farmer_id',         label: 'Farmer ID' },
-                  { field: 'scheme_id',         label: 'Scheme ID' },
+                  { field: 'farmer_id',         label: 'Farmer' },
+                  { field: 'scheme_id',         label: 'Scheme' },
                   { field: 'application_date',  label: 'Date Applied' },
                   { field: 'status',            label: 'Status' },
                 ].map(col => (
@@ -257,11 +278,12 @@ export const ApplicationsList = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                    {app.farmer_id.slice(0, 8).toUpperCase()}
+                  <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                    {app.farmer_name}
+                    <p className="text-xs text-gray-500 font-normal">{app.farmer_district}</p>
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                    {app.scheme_id.slice(0, 8).toUpperCase()}
+                  <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                    <span className="truncate w-40 inline-block">{app.scheme_name}</span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-600">
                     {new Date(app.application_date).toLocaleDateString('en-IN', {

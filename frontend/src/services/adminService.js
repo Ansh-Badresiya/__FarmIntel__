@@ -10,11 +10,19 @@ export const adminService = {
   updateUserRole: (userId, role) =>
     api.put(`/admin/users/${userId}/role`, { role }),
 
+  // ── Farmers ───────────────────────────────────────────────────────────────
+  getFarmers: (params = {}) => api.get('/admin/farmers', { params }),
+
   // ── Schemes ───────────────────────────────────────────────────────────────
   getSchemes: () => api.get('/admin/schemes'),
   createScheme: (data) => api.post('/admin/scheme', data),
   updateScheme: (id, data) => api.put(`/admin/scheme/${id}`, data),
   deleteScheme: (id) => api.delete(`/admin/scheme/${id}`),
+  activateScheme: (id) => api.post(`/admin/scheme/${id}/activate`),
+  deactivateScheme: (id) => api.post(`/admin/scheme/${id}/deactivate`),
+
+  // ── Applications (admin-wide view) ────────────────────────────────────────
+  getAllApplications: (params = {}) => api.get('/admin/applications', { params }),
 
   // ── Eligibility Rules ─────────────────────────────────────────────────────
   getRules: (schemeId = '') =>

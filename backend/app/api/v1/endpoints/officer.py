@@ -3,16 +3,16 @@ Officer Module – API Endpoints
 ==============================
 Provides routes that allow field officers (and admins) to:
 
-  GET  /officer/applications              – list pending applications
+  GET  /officer/applications              – list pending applications (with filters)
   GET  /officer/application/{id}          – full detail of one application
   POST /officer/approve/{id}              – approve a pending application
   POST /officer/reject/{id}               – reject a pending application
-  POST /officer/request-document/{id}     – ask farmer for more documents
+  POST /officer/need-info/{id}            – ask farmer for more documents/info
   POST /officer/assign/{id}               – (admin only) assign officer to application
 
 All mutating endpoints enforce:
   • Caller must be officer or admin  (via require_any_role)
-  • Application must still be in 'pending' state  (enforced by ApplicationService)
+  • Application must not be in a finalized state  (enforced by ApplicationService)
 """
 
 from uuid import UUID
@@ -20,9 +20,11 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import String
 
 from app.db.session import get_db
 from app.models.user import User, UserRole
+from app.models.subsidy_application import ApplicationStatus
 from app.api.dependencies import get_current_user, require_any_role, require_role
 from app.services.application_service import ApplicationService
 
@@ -31,7 +33,7 @@ from app.schemas.officer import (
     ApplicationDetailOut,
     ApproveApplicationRequest,
     RejectApplicationRequest,
-    RequestDocumentRequest,
+    NeedInfoRequest,
     AssignOfficerRequest,
 )
 
@@ -55,14 +57,13 @@ def get_application_service(db: Session = Depends(get_db)) -> ApplicationService
 @router.get(
     "/applications",
     response_model=List[ApplicationListOut],
-    summary="List pending applications",
-    description=(
-        "Returns all applications whose status is **pending**. "
-        "An officer sees only applications assigned to them; "
-        "an admin sees every pending application."
-    ),
+    summary="List applications (officer queue)",
+    description="Returns applications assigned to the officer, or all applications for an admin. Supports filtering by status.",
 )
-def list_pending_applications(
+def list_applications(
+    status: Optional[ApplicationStatus] = Query(None, description="Filter by status"),
+    search: Optional[str] = Query(None, description="Search by farmer name or ID"),
+    district: Optional[str] = Query(None, description="Filter by district"),
     current_user: User = Depends(get_current_user),
     service: ApplicationService = Depends(get_application_service),
 ) -> Any:
@@ -74,7 +75,53 @@ def list_pending_applications(
     if current_user.role == UserRole.officer:
         officer_filter = current_user.id
 
-    return service.list_pending(officer_id=officer_filter)
+    from app.models.subsidy_application import SubsidyApplication
+    from app.models.farmer import Farmer
+    from app.models.subsidy_scheme import SubsidyScheme
+    
+    query = service.db.query(SubsidyApplication)\
+        .join(Farmer, SubsidyApplication.farmer_id == Farmer.id)\
+        .join(User, Farmer.user_id == User.id)\
+        .join(SubsidyScheme, SubsidyApplication.scheme_id == SubsidyScheme.id)
+    
+    if officer_filter:
+        query = query.filter(SubsidyApplication.assigned_officer == officer_filter)
+        
+    if status:
+        query = query.filter(SubsidyApplication.status == status)
+        
+    if district:
+        query = query.filter(Farmer.district.ilike(f"%{district}%"))
+        
+    if search:
+        query = query.filter(
+            (User.full_name.ilike(f"%{search}%")) | 
+            (Farmer.father_name.ilike(f"%{search}%")) |
+            (SubsidyApplication.id.cast(String).ilike(f"%{search}%"))
+        )
+        
+    apps = query.order_by(SubsidyApplication.application_date.desc()).all()
+    
+    # Convert to dict format to include computed fields
+    result = []
+    for app in apps:
+        app_dict = {
+            "id": app.id,
+            "status": app.status,
+            "application_date": app.application_date,
+            "decision_date": app.decision_date,
+            "updated_at": app.updated_at,
+            "assigned_officer": app.assigned_officer,
+            "notes": app.notes,
+            "farmer_id": app.farmer_id,
+            "scheme_id": app.scheme_id,
+            "farmer_name": app.farmer.user.full_name if (app.farmer and app.farmer.user) else "Unknown",
+            "farmer_district": app.farmer.district if app.farmer else "Unknown",
+            "scheme_name": app.scheme.scheme_name if app.scheme else "Unknown",
+        }
+        result.append(app_dict)
+        
+    return result
 
 
 @router.get(
@@ -87,7 +134,28 @@ def get_application_detail(
     application_id: UUID,
     service: ApplicationService = Depends(get_application_service),
 ) -> Any:
-    return service.get_application_detail(application_id)
+    app = service.get_application_detail(application_id)
+    
+    # Get the farmer's first farm if exists
+    farm = None
+    if app.farmer and app.farmer.farms:
+        farm = app.farmer.farms[0]
+    
+    # Construct response with proper nested objects
+    return {
+        "id": app.id,
+        "status": app.status,
+        "application_date": app.application_date,
+        "decision_date": app.decision_date,
+        "updated_at": app.updated_at,
+        "assigned_officer": app.assigned_officer,
+        "notes": app.notes,
+        "documents": app.documents,
+        "inspection_status": app.inspection_status,
+        "farmer": app.farmer,
+        "farm": farm,
+        "scheme": app.scheme,
+    }
 
 
 # ── State transitions ────────────────────────────────────────────────────────
@@ -97,7 +165,7 @@ def get_application_detail(
     response_model=ApplicationDetailOut,
     summary="Approve an application",
     description=(
-        "Approve a **pending** application. "
+        "Approve an application. "
         "Sets status → `approved` and records `decision_date`. "
         "Optional `notes` field can hold approval remarks."
     ),
@@ -115,7 +183,7 @@ def approve_application(
     response_model=ApplicationDetailOut,
     summary="Reject an application",
     description=(
-        "Reject a **pending** application with a mandatory `reason`. "
+        "Reject an application with a mandatory `reason`. "
         "Sets status → `rejected` and records `decision_date`."
     ),
 )
@@ -128,20 +196,20 @@ def reject_application(
 
 
 @router.post(
-    "/request-document/{application_id}",
+    "/need-info/{application_id}",
     response_model=ApplicationDetailOut,
-    summary="Request additional documents",
+    summary="Request additional information",
     description=(
-        "Ask the farmer to supply additional documents. "
-        "The application **remains pending**; the request is appended to the notes history."
+        "Ask the farmer to supply additional information or documents. "
+        "Sets status → `need_info` and records the request in notes."
     ),
 )
-def request_additional_document(
+def request_additional_info(
     application_id: UUID,
-    body: RequestDocumentRequest,
+    body: NeedInfoRequest,
     service: ApplicationService = Depends(get_application_service),
 ) -> Any:
-    return service.request_document(application_id, document_request=body.document_request)
+    return service.request_document(application_id, document_request=body.message)
 
 
 # ── Admin-only: officer assignment ──────────────────────────────────────────

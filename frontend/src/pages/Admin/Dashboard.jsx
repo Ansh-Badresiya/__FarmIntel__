@@ -15,6 +15,8 @@ import {
 /* ── palette ─────────────────────────────────────────────────────────────── */
 const COLORS = {
   pending:  '#f59e0b',
+  under_verification: '#3b82f6',
+  need_info: '#f97316',
   approved: '#22c55e',
   rejected: '#ef4444',
 };
@@ -74,9 +76,10 @@ export const AdminDashboard = () => {
   if (loading) return <LoadingSpinner />;
 
   const appPieData = stats ? [
-    { name: 'Pending',  value: stats.applications_pending,  color: COLORS.pending  },
-    { name: 'Approved', value: stats.applications_approved, color: COLORS.approved },
-    { name: 'Rejected', value: stats.applications_rejected, color: COLORS.rejected },
+    { name: 'Pending',    value: stats.applications_pending,  color: COLORS.pending  },
+    { name: 'Verifying', value: stats.applications_verifying || 0, color: COLORS.under_verification },
+    { name: 'Approved',  value: stats.applications_approved, color: COLORS.approved },
+    { name: 'Rejected',  value: stats.applications_rejected, color: COLORS.rejected },
   ] : [];
 
   const appBarData = appPieData.filter(d => d.value > 0);
@@ -102,7 +105,7 @@ export const AdminDashboard = () => {
 
       {/* Stat Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           <StatCard
             icon={Users}
             label="Registered Farmers"
@@ -118,8 +121,15 @@ export const AdminDashboard = () => {
             accent={{ border: 'border-purple-100', iconBg: 'bg-purple-50', iconText: 'text-purple-600', valueText: 'text-purple-700' }}
           />
           <StatCard
+            icon={Users}
+            label="Field Officers"
+            value={stats.total_officers ?? '—'}
+            to="/admin/users"
+            accent={{ border: 'border-teal-100', iconBg: 'bg-teal-50', iconText: 'text-teal-600', valueText: 'text-teal-700' }}
+          />
+          <StatCard
             icon={Clock}
-            label="Applications Pending"
+            label="Pending Applications"
             value={stats.applications_pending}
             to="/admin/users"
             accent={{ border: 'border-yellow-100', iconBg: 'bg-yellow-50', iconText: 'text-yellow-600', valueText: 'text-yellow-600' }}

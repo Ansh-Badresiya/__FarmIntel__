@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from app.models.farmer import Farmer
 from app.models.farm import Farm
 from app.models.subsidy_scheme import SubsidyScheme
@@ -54,6 +54,18 @@ class EligibilityEngine:
         if not op_func:
             return False
 
+        # Coerce types for numerical comparisons (e.g. 26 >= "18")
+        if isinstance(actual_value, (int, float)) and isinstance(expected_value, str):
+            try:
+                expected_value = float(expected_value)
+            except ValueError:
+                pass
+        elif isinstance(expected_value, (int, float)) and isinstance(actual_value, str):
+            try:
+                actual_value = float(actual_value)
+            except ValueError:
+                pass
+
         try:
             return op_func(actual_value, expected_value)
         except Exception:
@@ -64,20 +76,41 @@ class EligibilityEngine:
         Evaluates all rules for a scheme. 
         Assuming ALL rules must pass for eligibility (AND condition).
         """
-        # First, check applicable_states if farmer state is provided
+        is_eligible, _ = self.evaluate_scheme_with_reasons(scheme, farmer, farm)
+        return is_eligible
+
+    def evaluate_scheme_with_reasons(self, scheme: SubsidyScheme, farmer: Farmer, farm: Farm) -> Tuple[bool, List[str]]:
+        """
+        Evaluates rules and returns (is_eligible, list_of_reasons).
+        """
+        reasons = []
+        is_eligible = True
+
+        # Check applicable states
         if scheme.applicable_states and farmer.state:
             if farmer.state not in scheme.applicable_states:
-                return False
+                is_eligible = False
+                reasons.append(f"Scheme is not applicable in your state ({farmer.state}). Applicable states: {', '.join(scheme.applicable_states)}")
 
-        # If there are no rules, it's open to everyone (or just depends on state)
-        if not scheme.rules:
-            return True
+        # Check rules
+        if scheme.rules:
+            import json
+            for rule in scheme.rules:
+                if not self.evaluate_rule(rule, farmer, farm):
+                    is_eligible = False
+                    # Format a readable reason
+                    logic = rule.rule_logic
+                    if isinstance(logic, str):
+                        try:
+                            logic = json.loads(logic)
+                        except:
+                            logic = {}
+                    field = logic.get("field", "unknown field")
+                    operator = logic.get("operator", "")
+                    value = logic.get("value", "")
+                    reasons.append(f"Rule failed: {rule.rule_name or field} (Requires {field} {operator} {value})")
 
-        for rule in scheme.rules:
-            if not self.evaluate_rule(rule, farmer, farm):
-                return False
-        
-        return True
+        return is_eligible, reasons
 
     def get_eligible_schemes(self, farmer: Farmer, farm: Farm, all_schemes: List[SubsidyScheme]) -> List[SubsidyScheme]:
         """Returns a list of eligible schemes for the given farmer and farm."""
