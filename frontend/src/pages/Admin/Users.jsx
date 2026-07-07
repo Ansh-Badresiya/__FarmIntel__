@@ -2,83 +2,38 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { adminService } from '../../services/adminService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ToastContainer, useToasts } from '../../components/shared/Toast';
-import {
-  Search, Users, UserCheck, Shield, UserCircle,
-  AlertCircle, RefreshCw, ChevronDown, Filter,
-} from 'lucide-react';
 
-/* ── constants ───────────────────────────────────────────────────────────── */
 const ROLES = ['farmer', 'officer', 'admin'];
-const ROLE_FILTER_OPTIONS = [
-  { value: '', label: 'All Roles' },
-  { value: 'farmer',  label: 'Farmers'  },
-  { value: 'officer', label: 'Officers' },
-  { value: 'admin',   label: 'Admins'   },
-];
 
-const roleMeta = {
-  farmer:  { bg: 'bg-green-100',  text: 'text-green-800',  border: 'border-green-200',  icon: UserCircle },
-  officer: { bg: 'bg-blue-100',   text: 'text-blue-800',   border: 'border-blue-200',   icon: UserCheck  },
-  admin:   { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200', icon: Shield     },
-};
-
-/* ── sub-components ─────────────────────────────────────────────────────── */
 const RoleBadge = ({ role }) => {
-  const m = roleMeta[role] || roleMeta.farmer;
-  const Icon = m.icon;
+  let bg = '';
+  if (role === 'admin') bg = 'status-approved';
+  else if (role === 'officer') bg = 'status-under_verification';
+  else bg = 'status-pending';
+
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold
-      border capitalize ${m.bg} ${m.text} ${m.border}`}>
-      <Icon className="w-3 h-3" />
+    <span className={`status-badge ${bg}`} style={{ textTransform: 'capitalize' }}>
       {role}
     </span>
   );
 };
 
-/* Role selector dropdown per row */
 const RoleSelect = ({ userId, currentRole, onRoleChange, saving }) => {
-  const [open, setOpen] = useState(false);
-  const m = roleMeta[currentRole] || roleMeta.farmer;
-
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(v => !v)}
-        disabled={saving}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium
-          transition-colors disabled:opacity-50 capitalize
-          ${m.bg} ${m.text} ${m.border} hover:brightness-95`}
-      >
-        {saving ? (
-          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-        ) : (
-          <>
-            {currentRole}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-          </>
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-xl z-30 overflow-hidden">
-          {ROLES.map(role => (
-            <button
-              key={role}
-              onClick={() => { setOpen(false); onRoleChange(userId, role); }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors capitalize
-                ${role === currentRole ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
-            >
-              {React.createElement(roleMeta[role]?.icon || UserCircle, { className: 'w-4 h-4' })}
-              {role}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <select
+      value={currentRole}
+      onChange={(e) => onRoleChange(userId, e.target.value)}
+      disabled={saving}
+      className="gov-input"
+      style={{ padding: '4px 8px', fontSize: '12px', width: 'auto', textTransform: 'capitalize' }}
+    >
+      {ROLES.map(role => (
+        <option key={role} value={role}>{role}</option>
+      ))}
+    </select>
   );
 };
 
-/* ── page ────────────────────────────────────────────────────────────────── */
 export const UsersPage = () => {
   const { toasts, addToast, removeToast } = useToasts();
   const [users, setUsers]           = useState([]);
@@ -87,7 +42,6 @@ export const UsersPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [savingId, setSavingId]     = useState(null);
 
-  // Filters
   const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
 
@@ -121,7 +75,6 @@ export const UsersPage = () => {
     }
   };
 
-  // client-side filter
   const filtered = users.filter(u => {
     if (roleFilter && u.role !== roleFilter) return false;
     if (search) {
@@ -131,165 +84,96 @@ export const UsersPage = () => {
     return true;
   });
 
-  // Counts per role
-  const counts = ROLES.reduce((acc, r) => {
-    acc[r] = users.filter(u => u.role === r).length;
-    return acc;
-  }, {});
-
   if (loading) return <LoadingSpinner />;
 
   return (
     <>
       <ToastContainer toasts={toasts} remove={removeToast} />
 
-      <div className="space-y-6">
+      <div>
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div style={{
+          background: '#fff', border: '1px solid var(--gov-border)', borderLeft: '4px solid var(--gov-orange)',
+          padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px'
+        }}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-6 h-6 text-blue-600" />
+            <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--gov-navy)' }}>
               User Management
             </h1>
-            <p className="text-gray-500 mt-1">
-              {users.length} total users — view and update roles.
+            <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--gov-text-light)' }}>
+              Total users: {users.length} — view and update system roles.
             </p>
           </div>
-          <button
-            onClick={() => fetchUsers(true)}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700
-              border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+          <button onClick={() => fetchUsers(true)} disabled={refreshing} className="gov-btn gov-btn-outline" style={{ padding: '6px 12px' }}>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
 
-        {/* Role Summary Pills */}
-        <div className="flex flex-wrap gap-3">
-          {ROLES.map(role => {
-            const m = roleMeta[role];
-            const Icon = m.icon;
-            return (
-              <button
-                key={role}
-                onClick={() => setRoleFilter(roleFilter === role ? '' : role)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
-                  transition-colors capitalize ${
-                    roleFilter === role
-                      ? `${m.bg} ${m.text} ${m.border} shadow-sm`
-                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                  }`}
-              >
-                <Icon className="w-4 h-4" />
-                {role}s
-                <span className={`px-1.5 py-0.5 text-xs rounded-full ${
-                  roleFilter === role ? 'bg-white/60' : 'bg-gray-100'
-                }`}>
-                  {counts[role]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {error && <div className="gov-alert gov-alert-error" style={{ marginBottom: '20px' }}>{error}</div>}
 
-        {/* Error */}
-        {error && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            {error}
-          </div>
-        )}
-
-        {/* Search + Filter */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Filter Bar */}
+        <div className="gov-card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <label className="gov-label">Search Users</label>
             <input
-              id="user-search"
-              type="text"
-              placeholder="Search by name or email…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl
-                focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+              type="text" placeholder="Name or email..." value={search} onChange={e => setSearch(e.target.value)}
+              className="gov-input"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              id="role-filter"
-              value={roleFilter}
-              onChange={e => setRoleFilter(e.target.value)}
-              className="px-3 py-2.5 text-sm border border-gray-200 rounded-xl
-                focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none bg-white text-gray-700"
-            >
-              {ROLE_FILTER_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
+          <div style={{ minWidth: '160px' }}>
+            <label className="gov-label">Filter by Role</label>
+            <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="gov-input">
+              <option value="">All Roles</option>
+              <option value="farmer">Farmers</option>
+              <option value="officer">Officers</option>
+              <option value="admin">Admins</option>
             </select>
           </div>
-          {(search || roleFilter) && (
-            <button
-              onClick={() => { setSearch(''); setRoleFilter(''); }}
-              className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200
-                rounded-xl hover:bg-red-50 transition-colors whitespace-nowrap"
-            >
-              Clear
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {(search || roleFilter) && (
+              <button onClick={() => { setSearch(''); setRoleFilter(''); }} className="gov-btn gov-btn-outline" style={{ height: '35px' }}>
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700">
-              {filtered.length} user{filtered.length !== 1 ? 's' : ''} shown
+        <div className="gov-card" style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', background: 'var(--gov-navy)', borderBottom: '2px solid var(--gov-orange)' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
+              Showing {filtered.length} Users
             </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-50">
-              <thead className="bg-gray-50">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="gov-table">
+              <thead>
                 <tr>
-                  {['Full Name', 'Email', 'Role', 'Status', 'Joined', 'Change Role'].map(h => (
-                    <th key={h}
-                      className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      {h}
-                    </th>
-                  ))}
+                  <th>User Details</th>
+                  <th>Contact Info</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined Date</th>
+                  <th>Update Role</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
                 {filtered.map(u => (
-                  <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-emerald-600
-                          rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-                          {u.full_name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900">{u.full_name}</span>
-                      </div>
+                  <tr key={u.id}>
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--gov-navy)', fontSize: '14px' }}>{u.full_name}</div>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{u.email}</td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <RoleBadge role={u.role} />
+                    <td style={{ fontSize: '13px' }}>{u.email}</td>
+                    <td><RoleBadge role={u.role} /></td>
+                    <td>
+                      {u.is_active ? <span className="status-badge status-approved">Active</span> : <span className="status-badge status-expired">Inactive</span>}
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        border ${u.is_active
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                        {u.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td style={{ fontSize: '13px' }}>
                       {new Date(u.created_at).toLocaleDateString('en-IN', {
                         day: 'numeric', month: 'short', year: 'numeric',
                       })}
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td>
                       <RoleSelect
                         userId={u.id}
                         currentRole={u.role}
@@ -301,10 +185,9 @@ export const UsersPage = () => {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center">
-                      <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">No users found</p>
-                      <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filter.</p>
+                    <td colSpan={6} style={{ padding: '40px', textAlign: 'center' }}>
+                      <div style={{ marginBottom: '12px' }}></div>
+                      <p style={{ margin: 0, fontWeight: 700, color: 'var(--gov-navy)' }}>No Users Found</p>
                     </td>
                   </tr>
                 )}

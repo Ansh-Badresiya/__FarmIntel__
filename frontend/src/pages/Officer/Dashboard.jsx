@@ -3,38 +3,34 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { officerService } from '../../services/officerService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
-import {
-  FileText, Clock, CheckCircle, XCircle, TrendingUp,
-  ArrowRight, AlertCircle, Activity, ClipboardList,
-} from 'lucide-react';
+import { ErrorAlert } from '../../components/shared/ErrorAlert';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts';
 
-/* ── helpers ────────────────────────────────────────────────────────────────── */
-const statusColor = {
-  pending:  { bg: 'bg-yellow-50',  text: 'text-yellow-700',  border: 'border-yellow-200',  dot: 'bg-yellow-400'  },
-  under_verification: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
-  need_info: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500' },
-  approved: { bg: 'bg-green-50',   text: 'text-green-700',   border: 'border-green-200',   dot: 'bg-green-500'   },
-  rejected: { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200',     dot: 'bg-red-500'     },
+// Reusing StatusBadge logic for Officer dashboard
+const StatusBadge = ({ status }) => {
+  const map = {
+    approved:           { cls: 'status-approved',           label: 'Approved' },
+    rejected:           { cls: 'status-rejected',           label: 'Rejected' },
+    need_info:          { cls: 'status-need_info',          label: 'Action Required' },
+    under_verification: { cls: 'status-under_verification', label: 'Under Review' },
+    pending:            { cls: 'status-pending',            label: 'Pending' },
+  };
+  const m = map[status] || map.pending;
+  return <span className={`status-badge ${m.cls}`}>{m.label}</span>;
 };
 
-const StatCard = ({ icon: Icon, label, value, accent, sub }) => (
-  <div className={`bg-white rounded-2xl border ${accent.border} shadow-sm p-5 flex items-start gap-4`}>
-    <div className={`${accent.iconBg} p-3 rounded-xl`}>
-      <Icon className={`w-6 h-6 ${accent.iconText}`} />
-    </div>
+const StatCard = ({ icon, label, value, color }) => (
+  <div className="gov-card" style={{ padding: '16px', display: 'flex', alignItems: 'flex-start', gap: '14px', borderTop: `3px solid ${color}` }}>
     <div>
-      <p className="text-sm text-gray-500 font-medium">{label}</p>
-      <p className={`text-3xl font-bold mt-0.5 ${accent.valueText}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gov-text-light)', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--gov-navy)', marginTop: '4px' }}>{value}</div>
     </div>
   </div>
 );
 
-/* ── component ──────────────────────────────────────────────────────────────── */
 export const OfficerDashboard = () => {
   const { user } = useAuth();
   const [applications, setApplications] = useState([]);
@@ -71,6 +67,7 @@ export const OfficerDashboard = () => {
     d.setDate(d.getDate() - (6 - i));
     return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric' });
   });
+  
   const dayBuckets = dayLabels.map((label, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
@@ -87,176 +84,147 @@ export const OfficerDashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Page Header */}
-      <div className="flex items-start justify-between">
+      <div style={{
+        background: '#fff',
+        border: '1px solid var(--gov-border)',
+        borderLeft: '4px solid var(--gov-orange)',
+        padding: '14px 18px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '10px',
+      }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {user?.full_name}
+          <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--gov-navy)' }}>
+            Officer Dashboard
           </h1>
-          <p className="text-gray-500 mt-1">
-            Here's a summary of your application queue and activity.
+          <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--gov-text-light)' }}>
+            Welcome back, <strong>{user?.full_name}</strong> — Overview of application queue and activities.
           </p>
         </div>
         <Link
           to="/officer/queue"
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white
-            text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors shadow-sm"
+          className="gov-btn gov-btn-primary"
+          style={{ fontSize: '13px', textDecoration: 'none' }}
         >
-          <ClipboardList className="w-4 h-4" />
           View Full Queue
         </Link>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
+      <ErrorAlert message={error} />
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard
-          icon={Activity}
-          label="Total"
-          value={total}
-          accent={{ border: 'border-gray-200', iconBg: 'bg-gray-100', iconText: 'text-gray-600', valueText: 'text-gray-800' }}
-        />
-        <StatCard
-          icon={Clock}
-          label="Pending"
-          value={pending}
-          accent={{ border: 'border-yellow-100', iconBg: 'bg-yellow-50', iconText: 'text-yellow-600', valueText: 'text-yellow-600' }}
-        />
-        <StatCard
-          icon={AlertCircle}
-          label="Action Needed"
-          value={needInfo}
-          accent={{ border: 'border-orange-100', iconBg: 'bg-orange-50', iconText: 'text-orange-600', valueText: 'text-orange-600' }}
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Approved"
-          value={approved}
-          accent={{ border: 'border-green-100', iconBg: 'bg-green-50', iconText: 'text-green-600', valueText: 'text-green-600' }}
-        />
-        <StatCard
-          icon={XCircle}
-          label="Rejected"
-          value={rejected}
-          accent={{ border: 'border-red-100', iconBg: 'bg-red-50', iconText: 'text-red-600', valueText: 'text-red-600' }}
-        />
-      </div>
-
-      {/* Charts + Recent Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        {/* Bar Chart */}
-        <div className="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <TrendingUp className="w-5 h-5 text-green-600" />
-            <h2 className="text-base font-semibold text-gray-900">Applications – Last 7 Days</h2>
-          </div>
-          {dayBuckets.some(d => d.count > 0) ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={dayBuckets} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ borderRadius: '10px', border: '1px solid #e5e7eb', fontSize: 12 }}
-                  cursor={{ fill: '#f9fafb' }}
-                />
-                <Bar dataKey="count" name="Applications" radius={[6, 6, 0, 0]}>
-                  {dayBuckets.map((_, i) => (
-                    <Cell key={i} fill={i === 6 ? '#16a34a' : '#86efac'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-48 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              <FileText className="w-8 h-8 text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400">No applications in the last 7 days</p>
-            </div>
-          )}
-        </div>
-
-        {/* Recent Activity */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-purple-600" />
-              Recent Activity
-            </h2>
-            <Link to="/officer/queue" className="text-xs text-green-600 hover:underline font-medium">
-              See all
-            </Link>
-          </div>
-
-          {recentApps.length === 0 ? (
-            <div className="h-40 flex items-center justify-center text-sm text-gray-400">
-              No recent applications.
-            </div>
-          ) : (
-            <ul className="space-y-3">
-              {recentApps.map((app) => {
-                const sc = statusColor[app.status] || statusColor.pending;
-                return (
-                  <li key={app.id}>
-                    <Link
-                      to={`/officer/application/${app.id}`}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
-                    >
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${sc.dot}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          App #{app.id.slice(0, 8).toUpperCase()}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(app.application_date).toLocaleDateString('en-IN', {
-                            day: 'numeric', month: 'short', year: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize
-                        ${sc.bg} ${sc.text} border ${sc.border}`}>
-                        {app.status}
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-green-600 transition-colors shrink-0" />
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+        <StatCard label="Total Applications" value={total} color="var(--gov-navy)" />
+        <StatCard label="Pending" value={pending} color="var(--gov-orange)" />
+        <StatCard label="Action Needed" value={needInfo} color="#B8860B" />
+        <StatCard label="Approved" value={approved} color="#1A7A1A" />
+        <StatCard label="Rejected" value={rejected} color="#C0392B" />
       </div>
 
       {/* Pending Banner */}
       {pending > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-5 flex items-center gap-4">
-          <div className="bg-amber-100 p-3 rounded-xl">
-            <Clock className="w-6 h-6 text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold text-amber-800">
-              {pending} application{pending > 1 ? 's' : ''} awaiting your review
-            </p>
-            <p className="text-sm text-amber-600 mt-0.5">
-              Timely processing helps farmers receive their subsidies faster.
-            </p>
-          </div>
-          <Link
-            to="/officer/queue"
-            className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm
-              font-semibold rounded-xl hover:bg-amber-700 transition-colors whitespace-nowrap"
-          >
-            Review Now <ArrowRight className="w-4 h-4" />
+        <div className="gov-alert gov-alert-warning" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>
+            <strong>{pending} application{pending > 1 ? 's' : ''} awaiting your review.</strong> Timely processing helps farmers receive their subsidies faster.
+          </span>
+          <Link to="/officer/queue" className="gov-btn gov-btn-primary" style={{ fontSize: '12px', padding: '6px 14px', textDecoration: 'none' }}>
+            Review Now
           </Link>
         </div>
       )}
+
+      {/* Main Content Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
+        
+        {/* Chart */}
+        <div className="gov-card">
+          <div style={{ padding: '14px 20px', background: 'var(--gov-navy)', borderBottom: '2px solid var(--gov-orange)' }}>
+            <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Applications Received (Last 7 Days)
+            </h2>
+          </div>
+          <div style={{ padding: '20px' }}>
+            {dayBuckets.some(d => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={dayBuckets} barSize={32}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--gov-text-light)' }} axisLine={{ stroke: '#CCCCCC' }} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--gov-text-light)' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '2px', border: '1px solid var(--gov-border)', fontSize: '13px' }}
+                    cursor={{ fill: '#F4F4F4' }}
+                  />
+                  <Bar dataKey="count" name="Applications" radius={[2, 2, 0, 0]}>
+                    {dayBuckets.map((_, i) => (
+                      <Cell key={i} fill={i === 6 ? 'var(--gov-orange)' : 'var(--gov-navy)'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '260px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8F8F8', border: '1px dashed var(--gov-border)' }}>
+                <div style={{ marginBottom: '8px' }}></div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--gov-text-light)' }}>No applications received in the last 7 days.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="gov-card">
+          <div style={{ padding: '14px 20px', background: 'var(--gov-navy)', borderBottom: '2px solid var(--gov-orange)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Recent Activity
+            </h2>
+            <Link to="/officer/queue" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontWeight: 600 }}>
+              View All →
+            </Link>
+          </div>
+          <div style={{ padding: '0' }}>
+            {recentApps.length === 0 ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: 'var(--gov-text-light)', fontSize: '13px' }}>
+                No recent applications.
+              </div>
+            ) : (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {recentApps.map((app) => (
+                  <li key={app.id} style={{ borderBottom: '1px solid #E8E8E8' }}>
+                    <Link
+                      to={`/officer/application/${app.id}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                        textDecoration: 'none', color: 'inherit', transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F8F8F8'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gov-navy)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          App #{app.id.slice(0, 8).toUpperCase()}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--gov-text-light)', marginTop: '2px' }}>
+                          {new Date(app.application_date).toLocaleDateString('en-IN', {
+                            day: 'numeric', month: 'short', year: 'numeric',
+                          })}
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0 }}>
+                        <StatusBadge status={app.status} />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

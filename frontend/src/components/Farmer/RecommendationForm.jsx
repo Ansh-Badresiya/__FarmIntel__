@@ -1,21 +1,10 @@
 import React from 'react';
 import { useLocation } from '../../hooks/useLocation';
-import { Leaf, RefreshCcw, MapPin, CalendarDays, Hash } from 'lucide-react';
 
 const SEASONS = ['Kharif', 'Rabi', 'Summer', 'Whole Year', 'Autumn', 'Winter'];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 20 }, (_, i) => CURRENT_YEAR - i);
 
-const fieldClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm ' +
-  'focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ' +
-  'disabled:bg-gray-50 disabled:text-gray-500 transition-colors';
-
-/**
- * RecommendationForm
- * Renders the State / District / Season / Year inputs and the submit button.
- * All location data is handled by the useLocation hook internally.
- */
 export const RecommendationForm = ({ onSubmit, loading }) => {
   const loc = useLocation();
 
@@ -35,19 +24,17 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <form onSubmit={handleSubmit}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
         {/* State */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-green-600" /> State
-          </label>
+          <label className="gov-label">State <span style={{ color: '#C0392B' }}>*</span></label>
           <select
             value={loc.selectedState}
             onChange={(e) => loc.handleStateChange(e.target.value)}
             disabled={loading || loc.loading}
             required
-            className={fieldClass}
+            className="gov-input"
           >
             <option value="">Select State</option>
             {loc.states.map((s) => (
@@ -58,15 +45,13 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
 
         {/* District */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-green-600" /> District
-          </label>
+          <label className="gov-label">District <span style={{ color: '#C0392B' }}>*</span></label>
           <select
             value={loc.selectedDistrict}
             onChange={(e) => loc.handleDistrictChange(e.target.value)}
             disabled={loading || loc.loading || !loc.selectedState}
             required
-            className={fieldClass}
+            className="gov-input"
           >
             <option value="">
               {!loc.selectedState ? 'Select a state first' : 'Select District'}
@@ -79,14 +64,12 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
 
         {/* Season */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-            <CalendarDays className="w-3.5 h-3.5 text-green-600" /> Season
-          </label>
+          <label className="gov-label">Season <span style={{ color: '#C0392B' }}>*</span></label>
           <select
             value={season}
             onChange={(e) => setSeason(e.target.value)}
             disabled={loading}
-            className={fieldClass}
+            className="gov-input"
           >
             {SEASONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -94,36 +77,25 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
 
         {/* Year */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-            <Hash className="w-3.5 h-3.5 text-green-600" /> Year
-          </label>
+          <label className="gov-label">Year <span style={{ color: '#C0392B' }}>*</span></label>
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
             disabled={loading}
-            className={fieldClass}
+            className="gov-input"
           >
             {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
       </div>
 
-      <div className="flex justify-end pt-2 border-t border-gray-100">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--gov-border)', paddingTop: '16px' }}>
         <button
           type="submit"
           disabled={loading || loc.loading || !loc.selectedState || !loc.selectedDistrict}
-          className="
-            flex items-center gap-2 px-6 py-2.5
-            bg-green-600 text-white text-sm font-medium rounded-md
-            hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500
-            disabled:opacity-50 disabled:cursor-not-allowed
-            transition-all duration-200 active:scale-95
-          "
+          className="gov-btn gov-btn-primary"
         >
-          {loading
-            ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Analysing…</>
-            : <><Leaf className="w-4 h-4" /> Get Recommendation</>
-          }
+          {loading ? 'Analysing Data...' : 'Get Recommendation'}
         </button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { LogOut, User, Lock, ChevronDown, Bell, Check } from 'lucide-react';
+import { LogOut, Lock, Bell, Check, ChevronDown, User } from 'lucide-react';
 import api from '../../services/api';
 
 export const Navbar = () => {
@@ -41,8 +41,6 @@ export const Navbar = () => {
         }
       };
       fetchNotifs();
-      
-      // Basic polling every minute just for updates while active
       const interval = setInterval(fetchNotifs, 60000);
       return () => clearInterval(interval);
     }
@@ -68,24 +66,99 @@ export const Navbar = () => {
     }
   };
 
+  const roleLabel = {
+    farmer: 'Farmer Portal',
+    officer: 'Officer Portal',
+    admin: 'Admin Portal',
+  };
+
   return (
-    <nav className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between sticky top-0 z-40">
-      <div className="flex items-center">
-        <span className="self-center text-xl font-bold whitespace-nowrap text-green-700">FarmIntel</span>
-      </div>
-      
-      <div className="flex items-center gap-4">
+    <header style={{ position: 'sticky', top: 0, zIndex: 40 }}>
+      {/* Top Orange Strip */}
+      <div className="gov-top-strip" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '12px', fontWeight: 500 }}>
+          FarmIntel — Smart Agriculture Decision Support System
+        </span>
         {user && (
-          <>
+          <span style={{ fontSize: '12px' }}>
+            Welcome, <strong>{user.full_name}</strong> &nbsp;|&nbsp;{' '}
+            {roleLabel[user.role] || user.role}
+          </span>
+        )}
+      </div>
+
+      {/* Main White Navigation Bar */}
+      <nav style={{
+        background: '#fff',
+        borderBottom: '3px solid var(--gov-orange)',
+        padding: '0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        minHeight: '60px',
+      }}>
+        {/* Logo / Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            background: 'var(--gov-orange)',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <span style={{ color: '#fff', fontSize: '20px', lineHeight: 1 }}>🌾</span>
+          </div>
+          <div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--gov-navy)', lineHeight: 1.1 }}>
+              FarmIntel
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--gov-text-light)', letterSpacing: '0.3px' }}>
+              Agricultural Subsidy Management System
+            </div>
+          </div>
+        </div>
+
+        {/* Right side: notifications + profile */}
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
             {/* Notification Bell */}
-            <div className="relative" ref={notifRef}>
+            <div style={{ position: 'relative' }} ref={notifRef}>
               <button
                 onClick={() => setNotifOpen(!notifOpen)}
-                className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                style={{
+                  position: 'relative',
+                  padding: '8px',
+                  background: 'none',
+                  border: '1px solid var(--gov-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  color: 'var(--gov-text-light)',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+                title="Notifications"
               >
-                <Bell className="w-5 h-5" />
+                <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full border-2 border-white">
+                  <span style={{
+                    position: 'absolute',
+                    top: '2px',
+                    right: '2px',
+                    background: 'var(--gov-orange)',
+                    color: '#fff',
+                    borderRadius: '50%',
+                    width: '16px',
+                    height: '16px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
                     {unreadCount}
                   </span>
                 )}
@@ -93,46 +166,78 @@ export const Navbar = () => {
 
               {/* Notifications Dropdown */}
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  width: '340px',
+                  background: '#fff',
+                  border: '1px solid var(--gov-border)',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  zIndex: 100,
+                }}>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderBottom: '2px solid var(--gov-orange)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--gov-navy)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Notifications
+                    </span>
                     {unreadCount > 0 && (
-                      <button 
+                      <button
                         onClick={markAllAsRead}
-                        className="text-xs font-medium text-green-600 hover:text-green-700"
+                        style={{ fontSize: '12px', color: 'var(--gov-orange)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
                       >
-                        Mark all as read
+                        Mark all read
                       </button>
                     )}
                   </div>
-                  <div className="max-h-[400px] overflow-y-auto">
+                  <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
                     {notifications.length > 0 ? (
                       notifications.map(notif => (
-                        <div 
-                          key={notif.id} 
-                          className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 flex gap-3 ${!notif.is_read ? 'bg-green-50/30' : ''}`}
+                        <div
+                          key={notif.id}
+                          style={{
+                            padding: '10px 14px',
+                            borderBottom: '1px solid #F0F0F0',
+                            background: notif.is_read ? '#fff' : '#FFF8F5',
+                            display: 'flex',
+                            gap: '10px',
+                            alignItems: 'flex-start',
+                          }}
                         >
-                          <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${!notif.is_read ? 'bg-green-500' : 'bg-transparent'}`} />
-                          <div className="flex-1">
-                            <h4 className="text-sm font-medium text-gray-900">{notif.title}</h4>
-                            <p className="text-xs text-gray-600 mt-0.5">{notif.message}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">
-                              {new Date(notif.created_at).toLocaleString()}
-                            </p>
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: notif.is_read ? 'transparent' : 'var(--gov-orange)',
+                            marginTop: '5px',
+                            flexShrink: 0,
+                          }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gov-text)' }}>{notif.title}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginTop: '2px' }}>{notif.message}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gov-text-muted)', marginTop: '3px' }}>
+                              {new Date(notif.created_at).toLocaleString('en-IN')}
+                            </div>
                           </div>
                           {!notif.is_read && (
-                            <button 
+                            <button
                               onClick={() => markAsRead(notif.id)}
-                              className="shrink-0 p-1 text-gray-400 hover:text-green-600 rounded"
                               title="Mark as read"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gov-text-muted)', flexShrink: 0 }}
                             >
-                              <Check className="w-4 h-4" />
+                              <Check size={14} />
                             </button>
                           )}
                         </div>
                       ))
                     ) : (
-                      <div className="py-8 text-center text-sm text-gray-500">
+                      <div style={{ padding: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--gov-text-muted)' }}>
                         No notifications yet
                       </div>
                     )}
@@ -142,48 +247,125 @@ export const Navbar = () => {
             </div>
 
             {/* Profile Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            <div style={{ position: 'relative' }} ref={dropdownRef}>
               <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 12px',
+                  background: 'none',
+                  border: '1px solid var(--gov-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: 'var(--gov-text)',
+                  fontWeight: 500,
+                }}
               >
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-green-700" />
+                <div style={{
+                  width: '30px',
+                  height: '30px',
+                  background: 'var(--gov-navy)',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <User size={16} color="#fff" />
                 </div>
-                <span className="hidden sm:inline">{user.full_name}</span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+                <span className="hidden sm:inline" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.full_name}
+                </span>
+                <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', color: 'var(--gov-text-light)' }} />
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-500">Signed in as</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-                    <span className="inline-block mt-1.5 px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full capitalize">{user.role}</span>
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 4px)',
+                  width: '220px',
+                  background: '#fff',
+                  border: '1px solid var(--gov-border)',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  zIndex: 100,
+                }}>
+                  {/* User Info */}
+                  <div style={{
+                    padding: '12px 14px',
+                    borderBottom: '2px solid var(--gov-orange)',
+                    background: 'var(--gov-navy)',
+                  }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{user.full_name}</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+                    <span style={{
+                      display: 'inline-block',
+                      marginTop: '6px',
+                      padding: '2px 8px',
+                      background: 'var(--gov-orange)',
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: '4px',
+                      textTransform: 'capitalize',
+                    }}>
+                      {user.role}
+                    </span>
                   </div>
-                  <div className="py-1">
+
+                  {/* Menu Items */}
+                  <div style={{ padding: '4px 0' }}>
                     <Link
                       to="/settings/change-password"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '9px 14px',
+                        fontSize: '13px',
+                        color: 'var(--gov-text)',
+                        textDecoration: 'none',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F4F4F4'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
-                      <Lock className="w-4 h-4 text-gray-400" />
+                      <Lock size={14} style={{ color: 'var(--gov-text-light)' }} />
                       Change Password
                     </Link>
                     <button
                       onClick={() => { setOpen(false); logout(); }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '9px 14px',
+                        fontSize: '13px',
+                        color: '#C0392B',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#FDECEA'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut size={14} />
                       Logout
                     </button>
                   </div>
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };

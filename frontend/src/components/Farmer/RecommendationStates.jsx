@@ -1,36 +1,23 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 
-/**
- * LoadingOverlay — full-page translucent overlay with animated spinner and status text.
- *
- * Props:
- *   message?: string   optional status line beneath the spinner
- */
-export const LoadingOverlay = ({ message = 'Analysing your farm data…' }) => (
-  <div className="
-    fixed inset-0 z-50
-    flex flex-col items-center justify-center
-    bg-white/80 backdrop-blur-sm
-  ">
-    <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-      <div className="relative">
-        <Loader2 className="w-12 h-12 animate-spin text-green-600" />
-        <div className="absolute inset-0 rounded-full border-2 border-green-100 animate-ping opacity-40" />
-      </div>
-      <div className="text-center">
-        <p className="font-semibold text-gray-900">Running AI Pipeline</p>
-        <p className="text-sm text-gray-500 mt-1">{message}</p>
-      </div>
-      {/* Stage indicators */}
-      <div className="flex items-center gap-2 mt-2">
+export const LoadingOverlay = ({ message = 'Analysing your farm data...' }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 50,
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(255,255,255,0.8)'
+  }}>
+    <div className="gov-card" style={{ padding: '32px', textAlign: 'center', borderTop: '4px solid var(--gov-orange)' }}>
+      <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--gov-navy)' }}>Running AI Pipeline</p>
+      <p style={{ margin: 0, fontSize: '13px', color: 'var(--gov-text-light)' }}>{message}</p>
+      
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
         {['Categories', 'Crops', 'Yield'].map((stage, i) => (
           <React.Fragment key={stage}>
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
-              <span className="text-xs text-gray-400">{stage}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '8px', height: '8px', background: '#1A7A1A', borderRadius: '50%' }} />
+              <span style={{ fontSize: '11px', color: 'var(--gov-text-muted)' }}>{stage}</span>
             </div>
-            {i < 2 && <div className="w-6 h-px bg-gray-200 mb-4" />}
+            {i < 2 && <div style={{ width: '24px', height: '1px', background: '#E8E8E8', marginBottom: '16px' }} />}
           </React.Fragment>
         ))}
       </div>
@@ -38,33 +25,27 @@ export const LoadingOverlay = ({ message = 'Analysing your farm data…' }) => (
   </div>
 );
 
-/**
- * ErrorState — card displayed when the API call fails.
- *
- * Props:
- *   message: string
- *   onRetry?: () => void
- */
 export const ErrorState = ({ message, onRetry }) => (
-  <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-    <p className="text-red-800 font-medium mb-1">Something went wrong</p>
-    <p className="text-sm text-red-600 mb-4">{message}</p>
+  <div className="gov-alert gov-alert-error" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <div>
+        <p style={{ margin: '0 0 2px', fontWeight: 700 }}>Something went wrong</p>
+        <p style={{ margin: 0, fontSize: '13px' }}>{message}</p>
+      </div>
+    </div>
     {onRetry && (
-      <button
-        onClick={onRetry}
-        className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
-      >
+      <button onClick={onRetry} className="gov-btn gov-btn-outline" style={{ fontSize: '12px', padding: '4px 10px', borderColor: '#C0392B', color: '#C0392B' }}>
         Try Again
       </button>
     )}
   </div>
 );
 
-/**
- * EmptyState — shown when Stage 2 returns no crops.
- */
 export const EmptyState = ({ message = 'No recommendations found for this combination. Try a different season or year.' }) => (
-  <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-10 text-center">
-    <p className="text-gray-500 text-sm">{message}</p>
+  <div style={{
+    background: '#F8F8F8', border: '1px dashed var(--gov-border)', padding: '40px',
+    textAlign: 'center', color: 'var(--gov-text-light)', fontSize: '13px'
+  }}>
+    <p style={{ margin: 0 }}>{message}</p>
   </div>
 );

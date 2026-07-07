@@ -1,53 +1,45 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Trophy, TrendingUp, Tag } from 'lucide-react';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-/**
- * RecommendationSummary — "Top Recommended Crops" panel.
- * Collapsed by default; clicking the button reveals the already-available data.
- *
- * Props:
- *   topCrops: Array<{ rank, crop, category, category_probability, predicted_yield_kg_per_ha }>
- */
 export const RecommendationSummary = ({ topCrops }) => {
   const [visible, setVisible] = useState(false);
 
   if (!topCrops || topCrops.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="gov-card" style={{ overflow: 'hidden', marginBottom: '20px' }}>
       {/* Toggle header */}
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="
-          w-full flex items-center justify-between p-5
-          bg-gradient-to-r from-green-600 to-emerald-500
-          text-white text-left group
-          hover:from-green-700 hover:to-emerald-600
-          transition-all duration-200
-        "
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', background: 'var(--gov-navy)', borderBottom: visible ? '2px solid var(--gov-orange)' : 'none',
+          border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = '#132B45'}
+        onMouseLeave={e => e.currentTarget.style.background = 'var(--gov-navy)'}
       >
-        <div className="flex items-center gap-3">
-          <Trophy className="w-5 h-5" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div>
-            <p className="font-semibold text-base">Top Recommended Crops</p>
-            <p className="text-green-100 text-xs mt-0.5">
+            <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Top Recommended Crops
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
               Overall best crops ranked across all categories
             </p>
           </div>
         </div>
-        {visible
-          ? <ChevronUp  className="w-5 h-5 opacity-80" />
-          : <ChevronDown className="w-5 h-5 opacity-80" />
-        }
+        <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+          {visible ? '▲' : '▼'}
+        </span>
       </button>
 
       {/* Collapsible body */}
       {visible && (
-        <div className="divide-y divide-gray-50 animate-fadeIn">
-          {topCrops.slice(0, 3).map((item) => {
+        <div style={{ padding: 0 }}>
+          {topCrops.slice(0, 3).map((item, i) => {
             const medal  = MEDALS[item.rank - 1] ?? `#${item.rank}`;
             const yield_ =
               item.predicted_yield_kg_per_ha != null
@@ -57,23 +49,28 @@ export const RecommendationSummary = ({ topCrops }) => {
             return (
               <div
                 key={item.crop}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px',
+                  borderBottom: i < 2 ? '1px solid #E8E8E8' : 'none', transition: 'background 0.15s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F8F8F8'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <span className="text-2xl flex-shrink-0">{medal}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">{item.crop}</p>
-                  <div className="flex flex-wrap items-center gap-3 mt-1">
-                    <span className="flex items-center gap-1 text-xs text-gray-500">
-                      <Tag className="w-3 h-3" /> {item.category}
+                <span style={{ fontSize: '28px', flexShrink: 0 }}>{medal}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: '15px', color: 'var(--gov-navy)' }}>{item.crop}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--gov-text-muted)' }}>
+                      Category: {item.category}
                     </span>
-                    <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                      <TrendingUp className="w-3 h-3" /> {yield_}
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A1A' }}>
+                      Yield: {yield_}
                     </span>
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs text-gray-400">Category prob.</p>
-                  <p className="font-semibold text-gray-900 text-sm">
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--gov-text-light)', textTransform: 'uppercase' }}>Category Prob.</p>
+                  <p style={{ margin: '2px 0 0', fontWeight: 700, fontSize: '15px', color: 'var(--gov-navy)' }}>
                     {(item.category_probability * 100).toFixed(1)}%
                   </p>
                 </div>
@@ -86,10 +83,15 @@ export const RecommendationSummary = ({ topCrops }) => {
       {/* "View Final Recommendation" CTA when collapsed */}
       {!visible && (
         <div
-          className="px-5 py-3 bg-green-50 border-t border-green-100 cursor-pointer group"
           onClick={() => setVisible(true)}
+          style={{
+            padding: '12px', background: '#F8F8F8', borderTop: '1px solid var(--gov-border)',
+            cursor: 'pointer', textAlign: 'center', transition: 'background 0.15s'
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = '#F0F0F0'}
+          onMouseLeave={e => e.currentTarget.style.background = '#F8F8F8'}
         >
-          <p className="text-sm text-green-700 font-medium group-hover:text-green-900 transition-colors text-center">
+          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--gov-navy)' }}>
             View Final Recommendation ↓
           </p>
         </div>

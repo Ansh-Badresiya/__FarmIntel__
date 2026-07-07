@@ -7,6 +7,7 @@ import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { PrivateRoute } from './components/shared/PrivateRoute';
 import { DashboardLayout } from './components/layout/DashboardLayout';
+import { Landing } from './pages/Landing';
 
 // Farmer Pages
 import { Dashboard as FarmerDashboard } from './pages/Farmer/Dashboard';
@@ -43,6 +44,7 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -83,7 +85,7 @@ function App() {
           </Route>
 
           {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>

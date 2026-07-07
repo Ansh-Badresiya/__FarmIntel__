@@ -23,15 +23,16 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
   const config = {
     approve: {
       title: 'Approve Application',
-      icon: <CheckCircle className="w-6 h-6 text-green-600" />,
-      accent: 'green',
-      buttonLabel: 'Approve',
-      buttonClass: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+      icon: <CheckCircle size={20} color="#1A7A1A" />,
+      headerBg: '#1A7A1A',
+      buttonStyle: { background: '#1A7A1A' },
+      buttonHover: '#15601A',
+      buttonLabel: 'Approve Application',
       fields: [
         {
           name: 'notes',
-          label: 'Approval Notes (optional)',
-          placeholder: 'Add any remarks for the farmer…',
+          label: 'Approval Notes (Optional)',
+          placeholder: 'Add any remarks or instructions for the farmer...',
           required: false,
           multiline: true,
         },
@@ -39,15 +40,16 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
     },
     reject: {
       title: 'Reject Application',
-      icon: <XCircle className="w-6 h-6 text-red-600" />,
-      accent: 'red',
-      buttonLabel: 'Reject',
-      buttonClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+      icon: <XCircle size={20} color="#C0392B" />,
+      headerBg: '#C0392B',
+      buttonStyle: { background: '#C0392B' },
+      buttonHover: '#A93226',
+      buttonLabel: 'Reject Application',
       fields: [
         {
           name: 'reason',
           label: 'Rejection Reason *',
-          placeholder: 'State the reason for rejection…',
+          placeholder: 'State the specific reason for rejection...',
           required: true,
           multiline: true,
         },
@@ -55,15 +57,16 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
     },
     'request-docs': {
       title: 'Request Additional Documents',
-      icon: <FolderUp className="w-6 h-6 text-amber-600" />,
-      accent: 'amber',
-      buttonLabel: 'Send Request',
-      buttonClass: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
+      icon: <FolderUp size={20} color="#B8860B" />,
+      headerBg: '#B8860B',
+      buttonStyle: { background: '#B8860B' },
+      buttonHover: '#9A7209',
+      buttonLabel: 'Send Document Request',
       fields: [
         {
           name: 'document_request',
-          label: 'Document Description *',
-          placeholder: 'Describe which documents are needed…',
+          label: 'Required Documents *',
+          placeholder: 'Describe the specific documents needed from the farmer...',
           required: true,
           multiline: true,
         },
@@ -71,7 +74,7 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
     },
   };
 
-  const { title, icon, buttonLabel, buttonClass, fields } = config[mode];
+  const { title, icon, headerBg, buttonStyle, buttonLabel, fields } = config[mode];
 
   const handleBackdropClick = (e) => {
     if (e.target === backdropRef.current) onClose();
@@ -86,27 +89,63 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.5)',
+      }}
     >
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div style={{
+        position: 'relative',
+        background: '#fff',
+        borderRadius: '6px',
+        width: '100%',
+        maxWidth: '460px',
+        margin: '0 16px',
+        overflow: 'hidden',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+        border: '1px solid var(--gov-border)',
+      }}>
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-          {icon}
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '14px 20px',
+          background: headerBg,
+          borderBottom: '2px solid rgba(255,255,255,0.2)',
+        }}>
+          {React.cloneElement(icon, { color: '#fff' })}
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', flex: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="ml-auto text-gray-400 hover:text-gray-600 transition-colors rounded-lg p-1 hover:bg-gray-100"
             aria-label="Close modal"
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '4px',
+            }}
           >
-            <X className="w-5 h-5" />
+            <X size={16} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(doSubmit)} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(doSubmit)} style={{ padding: '20px' }}>
           {fields.map((f) => (
-            <div key={f.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <div key={f.name} style={{ marginBottom: '16px' }}>
+              <label className="gov-label">
                 {f.label}
               </label>
               {f.multiline ? (
@@ -117,9 +156,8 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
                   {...register(f.name, {
                     required: f.required ? `${f.label.replace(' *', '')} is required` : false,
                   })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                    focus:ring-2 focus:ring-offset-0 focus:ring-green-500 focus:border-transparent
-                    resize-none outline-none transition"
+                  className="gov-input"
+                  style={{ resize: 'vertical', minHeight: '90px' }}
                 />
               ) : (
                 <input
@@ -129,34 +167,30 @@ export const ActionModal = ({ mode, onClose, onSubmit }) => {
                   {...register(f.name, {
                     required: f.required ? `${f.label} is required` : false,
                   })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                    focus:ring-2 focus:ring-offset-0 focus:ring-green-500 focus:border-transparent
-                    outline-none transition"
+                  className="gov-input"
                 />
               )}
               {errors[f.name] && (
-                <p className="mt-1 text-xs text-red-600">{errors[f.name].message}</p>
+                <p style={{ marginTop: '4px', fontSize: '12px', color: '#C0392B' }}>{errors[f.name].message}</p>
               )}
             </div>
           ))}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--gov-border)', marginTop: '8px' }}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300
-                rounded-lg hover:bg-gray-50 transition-colors"
+              className="gov-btn gov-btn-outline"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-5 py-2 text-sm font-medium text-white rounded-lg
-                focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors
-                disabled:opacity-60 disabled:cursor-not-allowed ${buttonClass}`}
+              className="gov-btn"
+              style={{ ...buttonStyle, color: '#fff' }}
             >
-              {isSubmitting ? 'Processing…' : buttonLabel}
+              {isSubmitting ? 'Processing...' : buttonLabel}
             </button>
           </div>
         </form>

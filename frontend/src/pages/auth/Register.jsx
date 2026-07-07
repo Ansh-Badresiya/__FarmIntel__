@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
-import { Sprout } from 'lucide-react';
 
 export const Register = () => {
   const { register: registerUser, user } = useAuth();
@@ -12,7 +11,6 @@ export const Register = () => {
   
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
-  // If already logged in, redirect to respective dashboard
   if (user) {
     return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
@@ -20,7 +18,6 @@ export const Register = () => {
   const onSubmit = async (data) => {
     try {
       setError('');
-      // Force role to farmer to prevent privilege escalation
       const userData = { ...data, role: 'farmer' };
       const newUser = await registerUser(userData);
       navigate(`/${newUser.role}/dashboard`);
@@ -30,96 +27,187 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-            <Sprout className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--gov-bg)',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      {/* Top Orange Strip */}
+      <div className="gov-top-strip" style={{ textAlign: 'center' }}>
+        FarmIntel — Smart Agriculture Decision Support System
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <ErrorAlert message={error} />
-          
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Full Name</label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  {...register('full_name', { required: 'Name is required' })}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                />
-                {errors.full_name && <p className="mt-1 text-sm text-red-600">{errors.full_name.message}</p>}
-              </div>
+      {/* Header Banner */}
+      <div style={{
+        background: 'var(--gov-navy)',
+        padding: '20px 0',
+        textAlign: 'center',
+        borderBottom: '4px solid var(--gov-orange)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: 'var(--gov-orange)',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '28px',
+          }}>
+            🌾
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#fff', letterSpacing: '0.5px' }}>
+              FarmIntel
+            </div>
+            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
+              Agricultural Subsidy Management System
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Register Form Container */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 16px',
+      }}>
+        <div style={{ width: '100%', maxWidth: '480px' }}>
+          {/* Form Card */}
+          <div className="gov-card" style={{ overflow: 'hidden' }}>
+            {/* Card Header */}
+            <div style={{
+              background: 'var(--gov-navy)',
+              padding: '14px 20px',
+              borderBottom: '2px solid var(--gov-orange)',
+            }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                📝 Farmer Registration
+              </h2>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+                Create your account to access government subsidy schemes
+              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email address</label>
-              <div className="mt-1">
-                <input
-                  type="email"
-                  {...register('email', { required: 'Email is required' })}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                />
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+            {/* Form Body */}
+            <div style={{ padding: '24px 20px' }}>
+              <ErrorAlert message={error} />
+
+              {/* Instructions */}
+              <div className="gov-alert gov-alert-info" style={{ marginBottom: '16px' }}>
+                <span style={{ fontSize: '16px' }}>ℹ️</span>
+                <span style={{ fontSize: '12px' }}>
+                  Registration is exclusively for farmers. Officers and administrators are created by the system admin.
+                </span>
               </div>
-            </div>
 
+              <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="gov-form-group">
+                  <label className="gov-label">Full Name <span style={{ color: '#C0392B' }}>*</span></label>
+                  <input
+                    type="text"
+                    {...register('full_name', { required: 'Name is required' })}
+                    className="gov-input"
+                    placeholder="As per official documents"
+                    id="register-fullname"
+                  />
+                  {errors.full_name && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.full_name.message}</p>}
+                </div>
 
+                <div className="gov-form-group">
+                  <label className="gov-label">Email Address <span style={{ color: '#C0392B' }}>*</span></label>
+                  <input
+                    type="email"
+                    {...register('email', { required: 'Email is required' })}
+                    className="gov-input"
+                    placeholder="Valid email address"
+                    id="register-email"
+                  />
+                  {errors.email && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.email.message}</p>}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Password</label>
-              <div className="mt-1">
-                <input
-                  type="password"
-                  {...register('password', { 
-                    required: 'Password is required',
-                    minLength: { value: 6, message: 'Password must be at least 6 characters' }
-                  })}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                />
-                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+                <div className="gov-form-group">
+                  <label className="gov-label">Password <span style={{ color: '#C0392B' }}>*</span></label>
+                  <input
+                    type="password"
+                    {...register('password', {
+                      required: 'Password is required',
+                      minLength: { value: 6, message: 'Password must be at least 6 characters' }
+                    })}
+                    className="gov-input"
+                    placeholder="Minimum 6 characters"
+                    id="register-password"
+                  />
+                  {errors.password && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.password.message}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="gov-btn gov-btn-primary"
+                  id="register-submit"
+                  style={{ width: '100%', padding: '10px', fontSize: '14px', marginTop: '4px' }}
+                >
+                  {isSubmitting ? '⏳ Registering...' : '✅ Register'}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div style={{ margin: '20px 0', borderTop: '1px solid var(--gov-border)', position: 'relative', textAlign: 'center' }}>
+                <span style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: '#fff',
+                  padding: '0 12px',
+                  fontSize: '12px',
+                  color: 'var(--gov-text-muted)',
+                }}>
+                  Already Registered?
+                </span>
               </div>
-            </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-              >
-                {isSubmitting ? 'Registering...' : 'Register'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Already have an account?</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
               <Link
                 to="/login"
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="gov-btn gov-btn-outline"
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px', textDecoration: 'none' }}
               >
-                Sign in
+                Sign In to Your Account
               </Link>
             </div>
           </div>
+
+          {/* Notice */}
+          <div style={{
+            marginTop: '16px',
+            padding: '12px 14px',
+            background: '#FFF8E1',
+            border: '1px solid #FFE082',
+            borderRadius: '4px',
+            fontSize: '12px',
+            color: '#7B6000',
+          }}>
+            <strong>📌 Note:</strong> All information provided will be used exclusively for agricultural subsidy processing. 
+            Please ensure details match your official documents.
+          </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        background: 'var(--gov-navy)',
+        color: 'rgba(255,255,255,0.6)',
+        textAlign: 'center',
+        padding: '12px',
+        fontSize: '12px',
+      }}>
+        © FarmIntel. All Rights Reserved. | v1.0
       </div>
     </div>
   );

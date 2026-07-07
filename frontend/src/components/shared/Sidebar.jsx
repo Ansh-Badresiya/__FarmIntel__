@@ -11,58 +11,92 @@ export const Sidebar = () => {
   
   if (!user) return null;
 
-  const role = user.role; // 'farmer', 'officer', 'admin'
+  const role = user.role;
 
   const links = {
     farmer: [
-      { to: '/farmer/dashboard',           label: 'Dashboard',          icon: LayoutDashboard },
-      { to: '/farmer/profile',             label: 'My Profile',         icon: UserCircle },
-      { to: '/farmer/farm',                label: 'Farm Details',       icon: Map },
-      { to: '/farmer/subsidies',           label: 'Eligible Subsidies', icon: Shield },
-      { to: '/farmer/applications',        label: 'My Applications',    icon: FileText },
-      { to: '/farmer/smart-recommendation',label: 'Smart ML',           icon: Brain },
+      { to: '/farmer/dashboard',            label: 'Dashboard',           icon: LayoutDashboard },
+      { to: '/farmer/profile',              label: 'My Profile',          icon: UserCircle },
+      { to: '/farmer/farm',                 label: 'Farm Details',        icon: Map },
+      { to: '/farmer/subsidies',            label: 'Eligible Subsidies',  icon: Shield },
+      { to: '/farmer/applications',         label: 'My Applications',     icon: FileText },
+      { to: '/farmer/smart-recommendation', label: 'Smart Crop AI',       icon: Brain },
     ],
     officer: [
       { to: '/officer/dashboard', label: 'Overview',          icon: LayoutDashboard },
       { to: '/officer/queue',     label: 'Application Queue', icon: ClipboardList   },
     ],
     admin: [
-      { to: '/admin/dashboard', label: 'Dashboard',        icon: LayoutDashboard },
-      { to: '/admin/schemes',   label: 'Schemes & Rules',  icon: Shield },
-      { to: '/admin/rules',     label: 'Eligibility Rules', icon: Settings },
-      { to: '/admin/users',     label: 'User Management',  icon: Users },
+      { to: '/admin/dashboard', label: 'Dashboard',          icon: LayoutDashboard },
+      { to: '/admin/schemes',   label: 'Subsidy Schemes',    icon: Shield },
+      { to: '/admin/rules',     label: 'Eligibility Rules',  icon: Settings },
+      { to: '/admin/users',     label: 'User Management',    icon: Users },
     ],
   };
 
   const navLinks = links[role] || [];
 
+  const roleLabels = {
+    farmer: 'FARMER PORTAL',
+    officer: 'OFFICER PORTAL',
+    admin: 'ADMIN PORTAL',
+  };
 
   return (
-    <aside className="w-64 bg-gray-50 border-r border-gray-200 h-[calc(100vh-65px)] overflow-y-auto">
-      <div className="px-3 py-4">
-        <ul className="space-y-2 font-medium">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <li key={link.to}>
-                <NavLink
-                  to={link.to}
-                  className={({ isActive }) => 
-                    `flex items-center p-2 rounded-lg transition-colors group ${
-                      isActive 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'text-gray-900 hover:bg-gray-100'
-                    }`
-                  }
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  {link.label}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
+    <aside style={{
+      width: '220px',
+      background: '#fff',
+      borderRight: '1px solid var(--gov-border)',
+      height: 'calc(100vh - 88px)',
+      overflowY: 'auto',
+      flexShrink: 0,
+    }}>
+      {/* Role Indicator */}
+      <div style={{
+        padding: '10px 14px',
+        background: 'var(--gov-navy)',
+        color: '#fff',
+        fontSize: '11px',
+        fontWeight: 700,
+        letterSpacing: '1px',
+        textTransform: 'uppercase',
+      }}>
+        {roleLabels[role] || 'PORTAL'}
       </div>
+
+      {/* Navigation Links */}
+      <nav style={{ padding: '8px 0' }}>
+        {navLinks.map((link) => {
+          const Icon = link.icon;
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                isActive ? 'gov-nav-link active' : 'gov-nav-link'
+              }
+            >
+              <Icon size={16} />
+              <span style={{ fontSize: '13px', fontWeight: 500 }}>{link.label}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Bottom divider */}
+      <div style={{ borderTop: '1px solid var(--gov-border)', margin: '8px 0' }} />
+
+      {/* Settings link */}
+      <NavLink
+        to="/settings/change-password"
+        className={({ isActive }) =>
+          isActive ? 'gov-nav-link active' : 'gov-nav-link'
+        }
+        style={{ fontSize: '13px' }}
+      >
+        <Settings size={16} />
+        <span style={{ fontSize: '13px', fontWeight: 500 }}>Settings</span>
+      </NavLink>
     </aside>
   );
 };

@@ -5,11 +5,16 @@ import { Sidebar } from '../shared/Sidebar';
 
 export const DashboardLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--gov-bg)' }}>
       <Navbar />
-      <div className="flex flex-1 overflow-hidden">
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+        <main style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '20px 24px',
+          background: 'var(--gov-bg)',
+        }}>
           <Outlet />
         </main>
       </div>

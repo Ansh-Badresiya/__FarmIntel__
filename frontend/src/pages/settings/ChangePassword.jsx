@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
-import { Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export const ChangePassword = () => {
   const navigate = useNavigate();
@@ -39,93 +38,100 @@ export const ChangePassword = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+      <div className="gov-card">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
-          <div className="bg-green-100 p-2 rounded-lg">
-            <Lock className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Change Password</h2>
-            <p className="text-sm text-gray-500">Keep your account secure with a strong password.</p>
-          </div>
+        <div style={{
+          padding: '14px 20px',
+          background: 'var(--gov-navy)',
+          borderBottom: '2px solid var(--gov-orange)',
+        }}>
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Change Password
+          </h2>
+          <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+            Keep your account secure with a strong password.
+          </p>
         </div>
 
-        <div className="p-6">
+        <div style={{ padding: '24px 20px' }}>
           <ErrorAlert message={error} />
 
           {success && (
-            <div className="mb-6 flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <ShieldCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-green-800">{success}</p>
+            <div className="gov-alert gov-alert-success" style={{ marginBottom: '20px' }}>
+              <span>{success}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             {/* Current Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Current Password
+              <label className="gov-label">
+                Current Password <span style={{ color: '#C0392B' }}>*</span>
               </label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   {...register('current_password', { required: 'Current password is required' })}
-                  className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                  className="gov-input"
                   placeholder="Enter current password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  style={{
+                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--gov-text-muted)'
+                  }}
                 >
-                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showCurrent ? 'Hide' : 'Show'}
                 </button>
               </div>
               {errors.current_password && (
-                <p className="mt-1 text-sm text-red-600">{errors.current_password.message}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.current_password.message}</p>
               )}
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-100 pt-1" />
+            <div style={{ borderTop: '1px solid var(--gov-border)', margin: '8px 0' }} />
 
             {/* New Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                New Password
+              <label className="gov-label">
+                New Password <span style={{ color: '#C0392B' }}>*</span>
               </label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showNew ? 'text' : 'password'}
                   {...register('new_password', {
                     required: 'New password is required',
                     minLength: { value: 6, message: 'Password must be at least 6 characters' },
                   })}
-                  className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                  className="gov-input"
                   placeholder="Enter new password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  style={{
+                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--gov-text-muted)'
+                  }}
                 >
-                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showNew ? 'Hide' : 'Show'}
                 </button>
               </div>
               {errors.new_password && (
-                <p className="mt-1 text-sm text-red-600">{errors.new_password.message}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.new_password.message}</p>
               )}
             </div>
 
             {/* Confirm New Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm New Password
+              <label className="gov-label">
+                Confirm New Password <span style={{ color: '#C0392B' }}>*</span>
               </label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   {...register('confirm_password', {
@@ -133,37 +139,44 @@ export const ChangePassword = () => {
                     validate: (value) =>
                       value === newPassword || 'Passwords do not match',
                   })}
-                  className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                  className="gov-input"
                   placeholder="Re-enter new password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  style={{
+                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--gov-text-muted)'
+                  }}
                 >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirm ? 'Hide' : 'Show'}
                 </button>
               </div>
               {errors.confirm_password && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirm_password.message}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.confirm_password.message}</p>
               )}
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              paddingTop: '16px', borderTop: '1px solid var(--gov-border)', marginTop: '8px'
+            }}>
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="gov-btn gov-btn-outline"
+                style={{ fontSize: '13px' }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                className="gov-btn gov-btn-primary"
+                style={{ fontSize: '13px' }}
               >
-                <Lock className="w-4 h-4" />
                 {isSubmitting ? 'Saving...' : 'Update Password'}
               </button>
             </div>

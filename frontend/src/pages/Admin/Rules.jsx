@@ -3,13 +3,7 @@ import { adminService } from '../../services/adminService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ToastContainer, useToasts } from '../../components/shared/Toast';
 import { useForm } from 'react-hook-form';
-import {
-  Settings, Plus, Pencil, Trash2, X, AlertCircle,
-  RefreshCw, ChevronDown, Shield, Hash, ArrowUpDown,
-  Code2, CheckCircle,
-} from 'lucide-react';
 
-/* ── JSON Editor helpers ───────────────────────────────────────────────── */
 const DEFAULT_RULE_LOGIC = JSON.stringify(
   { field: 'age', operator: '>=', value: 18 },
   null, 2
@@ -21,7 +15,6 @@ const FIELD_OPTIONS = [
   'annual_income', 'crop_type', 'irrigation_type',
 ];
 
-/** Structured form for simple single-condition rules */
 const StructuredEditor = ({ value, onChange }) => {
   const parse = (v) => {
     try {
@@ -41,55 +34,31 @@ const StructuredEditor = ({ value, onChange }) => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {/* Field */}
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">Field</label>
-        <select
-          value={state.field}
-          onChange={e => update({ field: e.target.value })}
-          className="w-full px-2.5 py-2 text-sm border border-gray-300 rounded-lg
-            focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-white"
-        >
+        <label className="gov-label">Field</label>
+        <select value={state.field} onChange={e => update({ field: e.target.value })} className="gov-input">
           <option value="">— select —</option>
           {FIELD_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
         </select>
       </div>
-      {/* Operator */}
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">Operator</label>
-        <select
-          value={state.operator}
-          onChange={e => update({ operator: e.target.value })}
-          className="w-full px-2.5 py-2 text-sm border border-gray-300 rounded-lg
-            focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-white"
-        >
+        <label className="gov-label">Operator</label>
+        <select value={state.operator} onChange={e => update({ operator: e.target.value })} className="gov-input">
           {OPERATOR_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       </div>
-      {/* Value */}
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">Value</label>
-        <input
-          type="text"
-          value={state.val}
-          onChange={e => update({ val: e.target.value })}
-          placeholder="e.g. 18 or 'Punjab'"
-          className="w-full px-2.5 py-2 text-sm border border-gray-300 rounded-lg
-            focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
-        />
+        <label className="gov-label">Value</label>
+        <input type="text" value={state.val} onChange={e => update({ val: e.target.value })} placeholder="e.g. 18" className="gov-input" />
       </div>
     </div>
   );
 };
 
-/* ── Rule Form Modal ───────────────────────────────────────────────────── */
 const RuleFormModal = ({ rule, schemes, onClose, onSaved }) => {
   const isEdit = !!rule;
-
-  const initialLogic = isEdit
-    ? JSON.stringify(rule.rule_logic, null, 2)
-    : DEFAULT_RULE_LOGIC;
+  const initialLogic = isEdit ? JSON.stringify(rule.rule_logic, null, 2) : DEFAULT_RULE_LOGIC;
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     defaultValues: isEdit
@@ -99,7 +68,7 @@ const RuleFormModal = ({ rule, schemes, onClose, onSaved }) => {
 
   const [jsonText, setJsonText]     = useState(initialLogic);
   const [jsonError, setJsonError]   = useState('');
-  const [mode, setMode]             = useState('structured'); // 'structured' | 'json'
+  const [mode, setMode]             = useState('structured');
 
   const validateJson = (text) => {
     try { JSON.parse(text); setJsonError(''); return true; }
@@ -133,146 +102,77 @@ const RuleFormModal = ({ rule, schemes, onClose, onSaved }) => {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ position: 'relative', background: '#fff', borderRadius: '6px', width: '100%', maxWidth: '600px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--gov-border)' }}>
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-white rounded-t-2xl">
-          <Settings className="w-5 h-5 text-amber-600" />
-          <h2 className="text-lg font-semibold text-gray-900 flex-1">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 20px', background: 'var(--gov-navy)', borderBottom: '2px solid var(--gov-orange)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#fff', flex: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {isEdit ? 'Edit Eligibility Rule' : 'New Eligibility Rule'}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: '#fff', padding: '4px 8px' }}>✕</button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
-          {/* Rule Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Rule Name *</label>
-            <input
-              id="rule-name"
-              type="text"
-              {...register('rule_name', { required: 'Rule name is required' })}
-              placeholder="e.g. Minimum Age Check"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl
-                focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition"
-            />
-            {errors.rule_name && <p className="mt-1 text-xs text-red-600">{errors.rule_name.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} style={{ padding: '20px' }}>
+          
+          <div style={{ marginBottom: '16px' }}>
+            <label className="gov-label">Rule Name <span style={{ color: '#C0392B' }}>*</span></label>
+            <input type="text" {...register('rule_name', { required: 'Required' })} placeholder="e.g. Min Age 18" className="gov-input" />
+            {errors.rule_name && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.rule_name.message}</p>}
           </div>
 
-          {/* Scheme selector – only for create */}
           {!isEdit && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Scheme *</label>
-              <select
-                id="rule-scheme"
-                {...register('scheme_id', { required: 'Please select a scheme' })}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl
-                  focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-white"
-              >
+            <div style={{ marginBottom: '16px' }}>
+              <label className="gov-label">Scheme <span style={{ color: '#C0392B' }}>*</span></label>
+              <select {...register('scheme_id', { required: 'Required' })} className="gov-input">
                 <option value="">— select scheme —</option>
                 {schemes.filter(s => s.is_active).map(s => (
                   <option key={s.id} value={s.id}>{s.scheme_name}</option>
                 ))}
               </select>
-              {errors.scheme_id && <p className="mt-1 text-xs text-red-600">{errors.scheme_id.message}</p>}
+              {errors.scheme_id && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.scheme_id.message}</p>}
             </div>
           )}
 
-          {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Priority
-              <span className="ml-1.5 text-xs text-gray-400 font-normal">(higher = evaluated first)</span>
-            </label>
-            <input
-              id="rule-priority"
-              type="number"
-              {...register('priority')}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl
-                focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition"
-            />
+          <div style={{ marginBottom: '16px' }}>
+            <label className="gov-label">Priority <span style={{ fontSize: '11px', color: 'var(--gov-text-muted)' }}>(higher evaluated first)</span></label>
+            <input type="number" {...register('priority')} className="gov-input" />
           </div>
 
-          {/* Rule Logic – mode toggle */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">Rule Logic *</label>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-                {[
-                  { id: 'structured', label: 'Form', icon: Settings },
-                  { id: 'json',       label: 'JSON', icon: Code2 },
-                ].map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setMode(id)}
-                    className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors
-                      ${mode === id
-                        ? 'bg-white text-gray-800 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    <Icon className="w-3 h-3" />{label}
-                  </button>
-                ))}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <label className="gov-label" style={{ margin: 0 }}>Rule Logic <span style={{ color: '#C0392B' }}>*</span></label>
+              <div style={{ display: 'flex', gap: '4px', background: '#F0F0F0', padding: '2px', borderRadius: '4px' }}>
+                <button type="button" onClick={() => setMode('structured')} style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer', background: mode === 'structured' ? '#fff' : 'transparent', border: 'none', borderRadius: '4px' }}>Form</button>
+                <button type="button" onClick={() => setMode('json')} style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer', background: mode === 'json' ? '#fff' : 'transparent', border: 'none', borderRadius: '4px' }}>JSON</button>
               </div>
             </div>
 
             {mode === 'structured' ? (
-              <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-4">
-                <p className="text-xs text-amber-700 mb-3 font-medium">
-                  Simple single-condition builder. Switch to JSON for complex logic.
-                </p>
+              <div style={{ background: '#FFF9E6', border: '1px solid #FFE082', padding: '16px', borderRadius: '4px' }}>
                 <StructuredEditor value={jsonText} onChange={setJsonText} />
               </div>
             ) : (
               <div>
                 <textarea
-                  value={jsonText}
-                  onChange={e => handleJsonChange(e.target.value)}
-                  rows={7}
-                  className={`w-full px-3 py-2.5 text-sm font-mono border rounded-xl
-                    focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none resize-y transition
-                    ${jsonError ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
-                  spellCheck={false}
+                  value={jsonText} onChange={e => handleJsonChange(e.target.value)} rows={7} spellCheck={false}
+                  className="gov-input" style={{ fontFamily: 'monospace', resize: 'vertical', borderColor: jsonError ? '#C0392B' : 'var(--gov-border)' }}
                 />
-                {jsonError ? (
-                  <p className="mt-1 text-xs text-red-600 font-mono">{jsonError}</p>
-                ) : (
-                  <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> Valid JSON
-                  </p>
-                )}
+                {jsonError ? <p style={{ color: '#C0392B', fontSize: '12px', marginTop: '4px' }}>{jsonError}</p> : <p style={{ color: '#1A7A1A', fontSize: '12px', marginTop: '4px' }}>✅ Valid JSON</p>}
               </div>
             )}
           </div>
 
-          {/* Preview */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 px-4 py-3">
-            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Preview</p>
-            <pre className="text-xs text-gray-700 overflow-x-auto font-mono">
-              {(() => {
-                try { return JSON.stringify(JSON.parse(jsonText), null, 2); }
-                catch { return jsonText; }
-              })()}
+          <div style={{ background: '#F8F8F8', border: '1px solid var(--gov-border)', padding: '12px', borderRadius: '4px', marginBottom: '16px' }}>
+            <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--gov-text-muted)' }}>Preview</p>
+            <pre style={{ margin: 0, fontSize: '12px', fontFamily: 'monospace', color: 'var(--gov-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {(() => { try { return JSON.stringify(JSON.parse(jsonText), null, 2); } catch { return jsonText; } })()}
             </pre>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200
-                rounded-xl hover:bg-gray-50 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" disabled={isSubmitting || !!jsonError}
-              className="px-5 py-2 text-sm font-medium text-white bg-amber-600 rounded-xl
-                hover:bg-amber-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              {isSubmitting ? 'Saving…' : isEdit ? 'Update Rule' : 'Create Rule'}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--gov-border)' }}>
+            <button type="button" onClick={onClose} className="gov-btn gov-btn-outline">Cancel</button>
+            <button type="submit" disabled={isSubmitting || !!jsonError} className="gov-btn gov-btn-primary">
+              {isSubmitting ? 'Saving...' : (isEdit ? 'Update Rule' : 'Create Rule')}
             </button>
           </div>
         </form>
@@ -281,7 +181,6 @@ const RuleFormModal = ({ rule, schemes, onClose, onSaved }) => {
   );
 };
 
-/* ── Delete Confirm ────────────────────────────────────────────────────── */
 const DeleteRuleModal = ({ rule, onClose, onDeleted }) => {
   const [loading, setLoading] = useState(false);
   const handle = async () => {
@@ -294,24 +193,16 @@ const DeleteRuleModal = ({ rule, onClose, onDeleted }) => {
     } finally { setLoading(false); }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-red-50 p-2.5 rounded-xl"><Trash2 className="w-5 h-5 text-red-600" /></div>
-          <h3 className="text-base font-semibold text-gray-900">Delete Rule</h3>
-        </div>
-        <p className="text-sm text-gray-600 mb-1">Are you sure you want to permanently delete:</p>
-        <p className="text-sm font-semibold text-gray-900 mb-5">"{rule.rule_name}"?</p>
-        <p className="text-xs text-red-500 mb-5">This action cannot be undone.</p>
-        <div className="flex justify-end gap-3">
-          <button onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50">
-            Cancel
-          </button>
-          <button onClick={handle} disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-60">
-            {loading ? 'Deleting…' : 'Delete'}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: '#fff', padding: '24px', borderRadius: '6px', width: '100%', maxWidth: '400px', borderTop: '4px solid #C0392B' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)' }}>Delete Rule</h3>
+        <p style={{ fontSize: '13px', margin: '0 0 12px' }}>Are you sure you want to permanently delete:</p>
+        <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gov-navy)', margin: '0 0 16px' }}>"{rule.rule_name}"?</p>
+        <p style={{ fontSize: '12px', color: '#C0392B', margin: '0 0 24px' }}>This action cannot be undone.</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <button onClick={onClose} className="gov-btn gov-btn-outline">Cancel</button>
+          <button onClick={handle} disabled={loading} className="gov-btn gov-btn-danger">
+            {loading ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </div>
@@ -319,7 +210,6 @@ const DeleteRuleModal = ({ rule, onClose, onDeleted }) => {
   );
 };
 
-/* ── page ────────────────────────────────────────────────────────────────── */
 export const RulesPage = () => {
   const { toasts, addToast, removeToast } = useToasts();
   const [rules, setRules]             = useState([]);
@@ -328,7 +218,7 @@ export const RulesPage = () => {
   const [error, setError]             = useState('');
   const [refreshing, setRefreshing]   = useState(false);
   const [schemeFilter, setSchemeFilter] = useState('');
-  const [formRule, setFormRule]       = useState(undefined); // null=create, obj=edit
+  const [formRule, setFormRule]       = useState(undefined);
   const [deleteRule, setDeleteRule]   = useState(null);
 
   const fetchData = useCallback(async (silent = false) => {
@@ -368,11 +258,8 @@ export const RulesPage = () => {
 
   const schemeMap = Object.fromEntries(schemes.map(s => [s.id, s.scheme_name]));
 
-  const filtered = rules.filter(r =>
-    !schemeFilter || r.scheme_id === schemeFilter
-  );
+  const filtered = rules.filter(r => !schemeFilter || r.scheme_id === schemeFilter);
 
-  // Group rules by scheme
   const grouped = filtered.reduce((acc, rule) => {
     const key = rule.scheme_id;
     if (!acc[key]) acc[key] = [];
@@ -386,71 +273,42 @@ export const RulesPage = () => {
     <>
       <ToastContainer toasts={toasts} remove={removeToast} />
       {formRule !== undefined && (
-        <RuleFormModal
-          rule={formRule}
-          schemes={schemes}
-          onClose={() => setFormRule(undefined)}
-          onSaved={handleSaved}
-        />
+        <RuleFormModal rule={formRule} schemes={schemes} onClose={() => setFormRule(undefined)} onSaved={handleSaved} />
       )}
       {deleteRule && (
-        <DeleteRuleModal
-          rule={deleteRule}
-          onClose={() => setDeleteRule(null)}
-          onDeleted={handleDeleted}
-        />
+        <DeleteRuleModal rule={deleteRule} onClose={() => setDeleteRule(null)} onDeleted={handleDeleted} />
       )}
 
-      <div className="space-y-6">
+      <div>
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div style={{
+          background: '#fff', border: '1px solid var(--gov-border)', borderLeft: '4px solid var(--gov-orange)',
+          padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px'
+        }}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Settings className="w-6 h-6 text-amber-600" />
-              Eligibility Rules
+            <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--gov-navy)' }}>
+              Eligibility Rules Management
             </h1>
-            <p className="text-gray-500 mt-1">
-              {rules.length} rule{rules.length !== 1 ? 's' : ''} across {Object.keys(grouped).length} scheme{Object.keys(grouped).length !== 1 ? 's' : ''}
+            <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--gov-text-light)' }}>
+              {rules.length} rules defined across {Object.keys(grouped).length} schemes.
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => fetchData(true)}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700
-                border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => fetchData(true)} disabled={refreshing} className="gov-btn gov-btn-outline" style={{ padding: '6px 12px' }}>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
             </button>
-            <button
-              id="create-rule-btn"
-              onClick={() => setFormRule(null)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
-                bg-amber-600 rounded-xl hover:bg-amber-700 transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
+            <button onClick={() => setFormRule(null)} className="gov-btn gov-btn-primary" style={{ padding: '6px 12px' }}>
               New Rule
             </button>
           </div>
         </div>
 
-        {error && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-            <AlertCircle className="w-5 h-5 shrink-0" />{error}
-          </div>
-        )}
+        {error && <div className="gov-alert gov-alert-error" style={{ marginBottom: '20px' }}>{error}</div>}
 
-        {/* Scheme filter */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">
-          <Shield className="w-4 h-4 text-gray-400" />
-          <span className="text-sm font-medium text-gray-600">Filter by scheme:</span>
-          <select
-            id="scheme-filter"
-            value={schemeFilter}
-            onChange={e => setSchemeFilter(e.target.value)}
-            className="flex-1 min-w-[180px] px-3 py-2 text-sm border border-gray-200 rounded-xl
-              focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-white text-gray-700"
-          >
+        {/* Filter */}
+        <div className="gov-card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gov-navy)' }}>Filter by Scheme:</span>
+          <select value={schemeFilter} onChange={e => setSchemeFilter(e.target.value)} className="gov-input" style={{ width: 'auto', minWidth: '240px' }}>
             <option value="">All Schemes ({rules.length} rules)</option>
             {schemes.map(s => (
               <option key={s.id} value={s.id}>
@@ -459,112 +317,69 @@ export const RulesPage = () => {
             ))}
           </select>
           {schemeFilter && (
-            <button
-              onClick={() => setSchemeFilter('')}
-              className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200 rounded-xl hover:bg-red-50"
-            >
-              Clear
-            </button>
+            <button onClick={() => setSchemeFilter('')} className="gov-btn gov-btn-outline" style={{ padding: '6px 12px', fontSize: '13px' }}>Clear</button>
           )}
         </div>
 
-        {/* Grouped rule cards */}
+        {/* Grouped Rules */}
         {Object.keys(grouped).length === 0 ? (
-          <div className="py-16 flex flex-col items-center justify-center text-center">
-            <Settings className="w-12 h-12 text-gray-200 mb-3" />
-            <p className="text-gray-500 font-medium">No rules found</p>
-            <p className="text-sm text-gray-400 mt-1">Create your first eligibility rule.</p>
-            <button
-              onClick={() => setFormRule(null)}
-              className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
-                bg-amber-600 rounded-xl hover:bg-amber-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" /> New Rule
-            </button>
+          <div style={{ padding: '40px', textAlign: 'center', background: '#fff', border: '1px solid var(--gov-border)' }}>
+            <div style={{ marginBottom: '12px' }}></div>
+            <p style={{ margin: 0, fontWeight: 700, color: 'var(--gov-navy)' }}>No Rules Found</p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--gov-text-light)' }}>Create your first eligibility rule.</p>
           </div>
         ) : (
-          Object.entries(grouped).map(([schemeId, schemeRules]) => (
-            <div key={schemeId} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {/* Scheme heading */}
-              <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 bg-purple-50/60">
-                <Shield className="w-4 h-4 text-purple-600 shrink-0" />
-                <span className="font-semibold text-purple-800 text-sm">
-                  {schemeMap[schemeId] || 'Unknown Scheme'}
-                </span>
-                <span className="ml-auto text-xs bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">
-                  {schemeRules.length} rule{schemeRules.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-
-              {/* Rules table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-50">
-                  <thead className="bg-gray-50/60">
-                    <tr>
-                      <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> Rule Name</span>
-                      </th>
-                      <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <span className="flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5" /> Priority</span>
-                      </th>
-                      <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <span className="flex items-center gap-1"><Code2 className="w-3.5 h-3.5" /> Rule Logic</span>
-                      </th>
-                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {[...schemeRules]
-                      .sort((a, b) => b.priority - a.priority)
-                      .map(rule => (
-                        <tr key={rule.id} className="hover:bg-amber-50/30 transition-colors group">
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-semibold text-gray-900">{rule.rule_name}</p>
-                            <p className="text-xs text-gray-400 font-mono mt-0.5">
-                              {rule.id.slice(0, 12)}…
-                            </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {Object.entries(grouped).map(([schemeId, schemeRules]) => (
+              <div key={schemeId} className="gov-card" style={{ overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', background: 'var(--gov-navy)', borderBottom: '2px solid var(--gov-orange)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                    {schemeMap[schemeId] || 'Unknown Scheme'}
+                  </span>
+                  <span style={{ fontSize: '12px', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '2px 8px', borderRadius: '2px' }}>
+                    {schemeRules.length} Rule{schemeRules.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="gov-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '25%' }}>Rule Name</th>
+                        <th style={{ width: '10%' }}>Priority</th>
+                        <th style={{ width: '50%' }}>Logic</th>
+                        <th style={{ width: '15%', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...schemeRules].sort((a, b) => b.priority - a.priority).map(rule => (
+                        <tr key={rule.id}>
+                          <td>
+                            <div style={{ fontWeight: 700, color: 'var(--gov-navy)', fontSize: '13px', marginBottom: '2px' }}>{rule.rule_name}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gov-text-muted)', fontFamily: 'monospace' }}>{rule.id.slice(0, 12)}...</div>
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold
-                              ${rule.priority > 0
-                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                                : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                          <td>
+                            <span style={{ background: rule.priority > 0 ? '#FFE0B2' : '#F0F0F0', color: rule.priority > 0 ? '#E65100' : '#666', padding: '2px 6px', borderRadius: '2px', fontSize: '12px', fontWeight: 600 }}>
                               {rule.priority > 0 ? `P${rule.priority}` : 'Default'}
                             </span>
                           </td>
-                          <td className="px-5 py-4 max-w-xs">
-                            <pre className="text-xs text-gray-600 font-mono bg-gray-50 border border-gray-200
-                              rounded-lg px-3 py-2 overflow-x-auto max-h-24 whitespace-pre-wrap break-all">
+                          <td>
+                            <pre style={{ margin: 0, padding: '8px', background: '#F8F8F8', border: '1px solid var(--gov-border)', fontSize: '12px', fontFamily: 'monospace', color: 'var(--gov-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: '80px', overflowY: 'auto' }}>
                               {JSON.stringify(rule.rule_logic, null, 2)}
                             </pre>
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => setFormRule(rule)}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                title="Edit"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => setDeleteRule(rule)}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
+                          <td style={{ textAlign: 'right' }}>
+                            <button onClick={() => setFormRule(rule)} className="gov-btn gov-btn-outline" style={{ padding: '4px 8px', fontSize: '12px', marginRight: '6px' }}>Edit</button>
+                            <button onClick={() => setDeleteRule(rule)} className="gov-btn gov-btn-danger" style={{ padding: '4px 8px', fontSize: '12px' }}>Delete</button>
                           </td>
                         </tr>
                       ))}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </>

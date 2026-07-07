@@ -14,11 +14,10 @@ export const Toast = ({ message, type = 'success', onClose, duration = 3500 }) =
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger CSS enter animation
     const show = requestAnimationFrame(() => setVisible(true));
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onClose, 300); // wait for fade-out
+      setTimeout(onClose, 300);
     }, duration);
     return () => {
       cancelAnimationFrame(show);
@@ -26,31 +25,68 @@ export const Toast = ({ message, type = 'success', onClose, duration = 3500 }) =
     };
   }, [duration, onClose]);
 
-  const base =
-    'flex items-start gap-3 px-4 py-3 rounded-xl shadow-xl border text-sm font-medium transition-all duration-300 min-w-[280px] max-w-sm';
   const variants = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error:   'bg-red-50   border-red-200   text-red-800',
-  };
-  const icons = {
-    success: <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />,
-    error:   <XCircle    className="w-5 h-5 text-red-500   shrink-0 mt-0.5" />,
+    success: {
+      bg: '#E8F5E9',
+      border: '#A5D6A7',
+      color: '#1A7A1A',
+      icon: <CheckCircle size={16} />,
+      label: 'SUCCESS',
+    },
+    error: {
+      bg: '#FDECEA',
+      border: '#FFCDD2',
+      color: '#C0392B',
+      icon: <XCircle size={16} />,
+      label: 'ERROR',
+    },
   };
 
+  const v = variants[type] || variants.success;
+
   return (
-    <div
-      className={`${base} ${variants[type]} ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-      }`}
-    >
-      {icons[type]}
-      <span className="flex-1">{message}</span>
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '10px',
+      padding: '12px 14px',
+      background: v.bg,
+      border: `1px solid ${v.border}`,
+      borderLeft: `4px solid ${v.color}`,
+      borderRadius: '2px',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
+      minWidth: '280px',
+      maxWidth: '380px',
+      color: v.color,
+      fontSize: '13px',
+      fontWeight: 500,
+      transition: 'all 0.3s',
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(8px)',
+    }}>
+      <span style={{ flexShrink: 0, marginTop: '1px' }}>{v.icon}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '2px' }}>
+          {v.label}
+        </div>
+        <div style={{ fontSize: '13px' }}>{message}</div>
+      </div>
       <button
         onClick={() => { setVisible(false); setTimeout(onClose, 300); }}
-        className="text-current opacity-50 hover:opacity-100 transition-opacity"
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: v.color,
+          opacity: 0.6,
+          flexShrink: 0,
+          padding: '0',
+          display: 'flex',
+          alignItems: 'center',
+        }}
         aria-label="Dismiss"
       >
-        <X className="w-4 h-4" />
+        <X size={14} />
       </button>
     </div>
   );
@@ -59,15 +95,21 @@ export const Toast = ({ message, type = 'success', onClose, duration = 3500 }) =
 
 /**
  * ToastContainer – renders a list of toasts in the bottom-right corner.
- *
- * Props:
- *   toasts  (array)    – [{ id, message, type }]
- *   remove  (fn(id))   – called to delete a toast from the list
  */
 export const ToastContainer = ({ toasts, remove }) => (
-  <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 items-end pointer-events-none">
+  <div style={{
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px',
+    zIndex: 9999,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    alignItems: 'flex-end',
+    pointerEvents: 'none',
+  }}>
     {toasts.map((t) => (
-      <div key={t.id} className="pointer-events-auto">
+      <div key={t.id} style={{ pointerEvents: 'auto' }}>
         <Toast message={t.message} type={t.type} onClose={() => remove(t.id)} />
       </div>
     ))}
@@ -77,8 +119,6 @@ export const ToastContainer = ({ toasts, remove }) => (
 
 /**
  * useToasts – hook for managing a toast list.
- *
- * Returns { toasts, addToast, removeToast }
  */
 export const useToasts = () => {
   const [toasts, setToasts] = useState([]);
