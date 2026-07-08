@@ -40,6 +40,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Any, List, Optional
 from pydantic import BaseModel
+import traceback
 
 from app.db.session import get_db
 from app.models.user import User, UserRole
@@ -88,11 +89,13 @@ def unified_recommend(
     loc_district = req.district or (profile.district if profile else None)
 
     if not loc_state:
+        traceback.print_exc()
         raise HTTPException(
             status_code=400,
             detail="State is required. Set it in your profile or pass it in the request.",
         )
     if not loc_district:
+        traceback.print_exc()
         raise HTTPException(
             status_code=400,
             detail="District is required. Set it in your profile or pass it in the request.",

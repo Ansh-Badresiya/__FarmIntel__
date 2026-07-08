@@ -69,10 +69,13 @@ class _ArtifactStore:
             logger.info("Loading ML artifacts from %s …", _MODELS_DIR)
 
         # ── Stage 1 ───────────────────────────────────────────────────────────
+        logger.info("Loading Stage 1 model...")
         self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
+        logger.info("Stage 1 model loaded")
+        logger.info("Loading encoder...")
         self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
         self.s1_lbl_enc = joblib.load(_MODELS_DIR / "label_encoder.pkl")
-
+        logger.info("Encoder loaded")
 
         with open(_MODELS_DIR / "crop_categories.json", encoding="utf-8") as f:
             self.s1_classes: List[str] = json.load(f)
@@ -178,6 +181,7 @@ class MLService:
         X_num = input_df[num_cols].values.astype(float)
         X = np.hstack([X_cat, X_num])
 
+        
         proba = _store.s1_model.predict_proba(X)[0]
 
         top_idx   = np.argsort(proba)[::-1][:top_k]
