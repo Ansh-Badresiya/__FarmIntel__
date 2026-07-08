@@ -52,6 +52,7 @@ Thumbs.db
 
 # ── ML artifacts ─────────────────────────────
 ml-models/data/
+ml-models/
 ml-models/checkpoints/
 *.pkl
 *.h5
