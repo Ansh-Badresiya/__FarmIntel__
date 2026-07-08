@@ -26,6 +26,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",   # Vite dev server
         "http://localhost:3000",   # alternate dev port
+        "https://farmintel-platform.vercel.app", # Production frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],
