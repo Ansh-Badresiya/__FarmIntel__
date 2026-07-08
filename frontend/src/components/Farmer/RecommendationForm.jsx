@@ -1,23 +1,23 @@
 import React from 'react';
-import { useLocation } from '../../hooks/useLocation';
+import { LocationSelector } from '../../components/shared/LocationSelector';
 
 const SEASONS = ['Kharif', 'Rabi', 'Summer', 'Whole Year', 'Autumn', 'Winter'];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 20 }, (_, i) => CURRENT_YEAR - i);
 
 export const RecommendationForm = ({ onSubmit, loading }) => {
-  const loc = useLocation();
+  const [locValue, setLocValue] = React.useState({ state: '', district: '', village: '' });
 
   const [season, setSeason] = React.useState('Kharif');
   const [year, setYear] = React.useState(CURRENT_YEAR);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!loc.selectedState) return;
-    if (!loc.selectedDistrict) return;
+    if (!locValue.state) return;
+    if (!locValue.district) return;
     onSubmit({
-      state:    loc.selectedState,
-      district: loc.selectedDistrict,
+      state:    locValue.state,
+      district: locValue.district,
       season,
       year: Number(year),
     });
@@ -27,40 +27,13 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
     <form onSubmit={handleSubmit}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
         {/* State */}
-        <div>
-          <label className="gov-label">State <span style={{ color: '#C0392B' }}>*</span></label>
-          <select
-            value={loc.selectedState}
-            onChange={(e) => loc.handleStateChange(e.target.value)}
-            disabled={loading || loc.loading}
-            required
-            className="gov-input"
-          >
-            <option value="">Select State</option>
-            {loc.states.map((s) => (
-              <option key={s.name} value={s.name}>{s.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* District */}
-        <div>
-          <label className="gov-label">District <span style={{ color: '#C0392B' }}>*</span></label>
-          <select
-            value={loc.selectedDistrict}
-            onChange={(e) => loc.handleDistrictChange(e.target.value)}
-            disabled={loading || loc.loading || !loc.selectedState}
-            required
-            className="gov-input"
-          >
-            <option value="">
-              {!loc.selectedState ? 'Select a state first' : 'Select District'}
-            </option>
-            {loc.districts.map((d) => (
-              <option key={d.name} value={d.name}>{d.name}</option>
-            ))}
-          </select>
-        </div>
+        <LocationSelector 
+          value={locValue}
+          onChange={setLocValue}
+          showVillage={false}
+          required={true}
+          disabled={loading}
+        />
 
         {/* Season */}
         <div>
@@ -92,7 +65,7 @@ export const RecommendationForm = ({ onSubmit, loading }) => {
       <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--gov-border)', paddingTop: '16px' }}>
         <button
           type="submit"
-          disabled={loading || loc.loading || !loc.selectedState || !loc.selectedDistrict}
+          disabled={loading || !locValue.state || !locValue.district}
           className="gov-btn gov-btn-primary"
         >
           {loading ? 'Analysing Data...' : 'Get Recommendation'}

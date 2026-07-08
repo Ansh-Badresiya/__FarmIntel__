@@ -138,9 +138,10 @@ class FarmerService:
     def get_applications(self, user_id: UUID) -> List[SubsidyApplication]:
         farmer = self.get_profile(user_id)
         if not farmer:
-            raise HTTPException(status_code=400, detail="Farmer profile not found")
+            # No profile yet — return empty list (not an error, just onboarding state)
+            return []
         # Ensure scheme is loaded for the frontend
         apps = self.application_repo.list_by_farmer_id(farmer.id)
         for app in apps:
-            _ = app.scheme # Force lazy load
+            _ = app.scheme  # Force lazy load
         return apps

@@ -4,16 +4,9 @@ import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ToastContainer, useToasts } from '../../components/shared/Toast';
 import { useForm } from 'react-hook-form';
 
+import { locationService } from '../../services/locationService';
+
 const SEASONS = ['Kharif', 'Rabi', 'Zaid', 'All'];
-const INDIAN_STATES = [
-  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa',
-  'Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala',
-  'Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland',
-  'Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura',
-  'Uttar Pradesh','Uttarakhand','West Bengal',
-  'Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu',
-  'Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry',
-];
 
 const SchemeFormModal = ({ scheme, onClose, onSaved }) => {
   const isEdit = !!scheme;
@@ -44,11 +37,19 @@ const SchemeFormModal = ({ scheme, onClose, onSaved }) => {
   const [selectedStates,  setSelectedStates]  = useState(isEdit ? (scheme.applicable_states  || []) : []);
   const [selectedSeasons, setSelectedSeasons] = useState(isEdit ? (scheme.applicable_seasons || []) : []);
   const [stateSearch, setStateSearch] = useState('');
-
+  
   const toggleState  = (s) => setSelectedStates(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
   const toggleSeason = (s) => setSelectedSeasons(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
-  const filteredStates = INDIAN_STATES.filter(s => s.toLowerCase().includes(stateSearch.toLowerCase()));
+  const [allStates, setAllStates] = useState([]);
+  
+  useEffect(() => {
+    locationService.getStates().then(res => {
+      setAllStates(res.data.states.map(s => s.name));
+    }).catch(err => console.error(err));
+  }, []);
+
+  const filteredStates = allStates.filter(s => s.toLowerCase().includes(stateSearch.toLowerCase()));
 
   const onSubmit = async (data) => {
     const payload = {

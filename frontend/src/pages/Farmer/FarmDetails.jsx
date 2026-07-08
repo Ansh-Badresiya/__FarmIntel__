@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { farmerService } from '../../services/farmerService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
+import { AlertCircle } from 'lucide-react';
 
 const SectionPanel = ({ number, icon, title, desc, children }) => (
   <div className="gov-card" style={{ marginBottom: '20px', overflow: 'hidden' }}>
@@ -53,21 +55,40 @@ export const FarmDetails = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [exists, setExists] = useState(false);
+  const [profileMissing, setProfileMissing] = useState(false);
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     const loadFarm = async () => {
       try {
-        const res = await farmerService.getFarm();
-        if (res.data) {
-          reset(res.data);
-          setExists(true);
+        // First check: does a farmer profile exist?
+        try {
+          await farmerService.getProfile();
+        } catch (profileErr) {
+          if (profileErr.response?.status === 404) {
+            setProfileMissing(true);
+            setLoading(false);
+            return;
+          }
+          throw profileErr;
+        }
+
+        // Profile exists — now load farm details (may or may not exist)
+        try {
+          const res = await farmerService.getFarm();
+          if (res.data) {
+            reset(res.data);
+            setExists(true);
+          }
+        } catch (farmErr) {
+          // 404 means farm doesn't exist yet — show empty form for creation
+          if (farmErr.response?.status !== 404) {
+            setError('Failed to load farm details.');
+          }
         }
       } catch (err) {
-        if (err.response?.status !== 404) {
-          setError('Failed to load farm details.');
-        }
+        setError('Failed to load farm details.');
       } finally {
         setLoading(false);
       }
@@ -97,6 +118,41 @@ export const FarmDetails = () => {
   };
 
   if (loading) return <LoadingSpinner />;
+
+  // ── No farmer profile yet — show guide ────────────────────────────────────
+  if (profileMissing) {
+    return (
+      <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+        <div style={{
+          background: '#fff', border: '1px solid var(--gov-border)',
+          borderLeft: '4px solid var(--gov-orange)', padding: '14px 18px', marginBottom: '20px',
+        }}>
+          <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--gov-navy)' }}>
+            Farm Details Registration
+          </h1>
+        </div>
+        <div style={{
+          background: '#FFF8E1', border: '1px solid #FFE082',
+          borderLeft: '4px solid #F59E0B', borderRadius: '4px',
+          padding: '20px', display: 'flex', gap: '14px', alignItems: 'flex-start',
+        }}>
+          <AlertCircle size={20} style={{ color: '#B45309', flexShrink: 0, marginTop: '1px' }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '14px', color: '#92400E', marginBottom: '6px' }}>
+              Farmer Profile Required First
+            </div>
+            <div style={{ fontSize: '13px', color: '#78350F', lineHeight: '1.6', marginBottom: '14px' }}>
+              You need to complete your Farmer Profile before adding farm details.
+              Your Aadhaar number and personal information must be saved first.
+            </div>
+            <Link to="/farmer/profile" className="gov-btn gov-btn-primary" style={{ textDecoration: 'none', fontSize: '13px', display: 'inline-block' }}>
+              Complete Farmer Profile →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '860px', margin: '0 auto' }}>

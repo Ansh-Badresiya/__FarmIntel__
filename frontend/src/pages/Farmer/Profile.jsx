@@ -5,9 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
 
-import { INDIA_STATES_DISTRICTS } from '../../utils/indiaStatesDistricts';
-
-const INDIAN_STATES = INDIA_STATES_DISTRICTS.states.map(s => s.state);
+import { LocationSelector } from '../../components/shared/LocationSelector';
 
 const SectionPanel = ({ number, icon, title, desc, children }) => (
   <div className="gov-card" style={{ marginBottom: '20px', overflow: 'hidden' }}>
@@ -90,9 +88,16 @@ export const Profile = () => {
   });
 
   const dob = watch('date_of_birth');
-  const selectedState = watch('state');
-
-  const availableDistricts = INDIA_STATES_DISTRICTS.states.find(s => s.state === selectedState)?.districts || [];
+  const locationValues = {
+    state: watch('state'),
+    district: watch('district'),
+    village: watch('village')
+  };
+  const handleLocationChange = (val) => {
+    setValue('state', val.state);
+    setValue('district', val.district);
+    setValue('village', val.village);
+  };
 
   useEffect(() => {
     if (dob) {
@@ -260,10 +265,7 @@ export const Profile = () => {
               />
             </Field>
           </div>
-          <FieldRow cols={3}>
-            <Field label="Village / Town">
-              <input type="text" {...register('village')} className="gov-input" />
-            </Field>
+          <FieldRow cols={2}>
             <Field label="Taluka / Tehsil">
               <input type="text" {...register('taluka')} className="gov-input" />
             </Field>
@@ -271,19 +273,16 @@ export const Profile = () => {
               <input type="text" {...register('postal_code')} className="gov-input" />
             </Field>
           </FieldRow>
-          <FieldRow cols={2}>
-            <Field label="State">
-              <select {...register('state')} className="gov-input">
-                <option value="">-- Select State --</option>
-                {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </Field>
-            <Field label="District">
-              <select {...register('district')} disabled={!selectedState} className="gov-input">
-                <option value="">-- Select District --</option>
-                {availableDistricts.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </Field>
+          <FieldRow cols={3}>
+            <LocationSelector 
+              value={locationValues} 
+              onChange={handleLocationChange} 
+              errors={{
+                state: errors.state?.message,
+                district: errors.district?.message,
+                village: errors.village?.message
+              }}
+            />
           </FieldRow>
         </SectionPanel>
 

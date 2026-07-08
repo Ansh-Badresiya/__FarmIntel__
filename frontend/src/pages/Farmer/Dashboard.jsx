@@ -3,9 +3,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { farmerService } from '../../services/farmerService';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { FileText, ArrowRight, Brain, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { FileText, ArrowRight, Brain, AlertCircle, UserCheck, Home, CheckCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 const COLORS = {
@@ -37,16 +37,187 @@ const StatusBadge = ({ status }) => {
   return <span className={`status-badge ${cls}`}>{labels[status] || status}</span>;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Onboarding Banner — shown when no farmer profile exists yet
+// ─────────────────────────────────────────────────────────────────────────────
+const OnboardingBanner = ({ userName }) => (
+  <div>
+    {/* Page Header */}
+    <div style={{
+      background: '#fff',
+      border: '1px solid var(--gov-border)',
+      borderLeft: '4px solid var(--gov-orange)',
+      padding: '14px 18px',
+      marginBottom: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '10px',
+    }}>
+      <div>
+        <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--gov-navy)' }}>
+          Farmer Dashboard
+        </h1>
+        <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--gov-text-light)' }}>
+          Welcome, <strong>{userName}</strong> — Let's get your account set up.
+        </p>
+      </div>
+    </div>
+
+    {/* Onboarding Notice */}
+    <div style={{
+      background: '#FFF8E1',
+      border: '1px solid #FFE082',
+      borderLeft: '4px solid #F59E0B',
+      borderRadius: '4px',
+      padding: '16px 20px',
+      marginBottom: '24px',
+      display: 'flex',
+      gap: '14px',
+      alignItems: 'flex-start',
+    }}>
+      <AlertCircle size={20} style={{ color: '#B45309', flexShrink: 0, marginTop: '1px' }} />
+      <div>
+        <div style={{ fontWeight: 700, fontSize: '14px', color: '#92400E', marginBottom: '4px' }}>
+          Farmer Profile Not Yet Created
+        </div>
+        <div style={{ fontSize: '13px', color: '#78350F', lineHeight: '1.5' }}>
+          Please complete your farmer profile to access dashboard features, check scheme eligibility,
+          and submit subsidy applications.
+        </div>
+      </div>
+    </div>
+
+    {/* Onboarding Steps */}
+    <div className="gov-card" style={{ overflow: 'hidden', marginBottom: '24px' }}>
+      <div style={{
+        background: 'var(--gov-navy)',
+        borderBottom: '2px solid var(--gov-orange)',
+        padding: '12px 18px',
+      }}>
+        <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Getting Started — Complete Your Onboarding
+        </h2>
+      </div>
+      <div style={{ padding: '24px 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+          {/* Step 1 */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'var(--gov-orange)', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '16px',
+              }}>1</div>
+              <div style={{ width: '2px', height: '40px', background: 'var(--gov-border)', margin: '4px 0' }} />
+            </div>
+            <div style={{ paddingTop: '6px', flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--gov-navy)', marginBottom: '2px' }}>
+                Complete Farmer Profile
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginBottom: '12px' }}>
+                Provide your Aadhaar number, address, income details, and bank information for subsidy eligibility checks.
+              </div>
+              <Link to="/farmer/profile" className="gov-btn gov-btn-primary" style={{ textDecoration: 'none', fontSize: '13px', display: 'inline-block' }}>
+                Complete Profile →
+              </Link>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: '#D1D5DB', color: '#6B7280',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '16px',
+              }}>2</div>
+              <div style={{ width: '2px', height: '40px', background: 'var(--gov-border)', margin: '4px 0' }} />
+            </div>
+            <div style={{ paddingTop: '6px', flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: '#6B7280', marginBottom: '2px' }}>
+                Add Farm Details
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginBottom: '12px' }}>
+                Enter land area, soil type, irrigation method, and current crops to improve eligibility matching.
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: '#D1D5DB', color: '#6B7280',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '16px',
+              }}>3</div>
+            </div>
+            <div style={{ paddingTop: '6px', flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: '#6B7280', marginBottom: '2px' }}>
+                Browse &amp; Apply for Schemes
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)' }}>
+                View eligible government subsidy schemes and submit applications directly from the dashboard.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    {/* Info Panel */}
+    <div style={{
+      padding: '14px 16px',
+      background: '#F0F7FF',
+      border: '1px solid #BFDBFE',
+      borderRadius: '4px',
+      fontSize: '12px',
+      color: '#1E40AF',
+    }}>
+      <strong>📌 Why is this required?</strong> Your Aadhaar number and other details are used to verify
+      eligibility for Central and State government subsidy schemes under the PM-KISAN, PMFBY,
+      and other agricultural welfare programmes.
+    </div>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Dashboard
+// ─────────────────────────────────────────────────────────────────────────────
 export const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [profileMissing, setProfileMissing] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        // ── Step 1: Check if farmer profile exists ─────────────────────────
+        try {
+          await farmerService.getProfile();
+        } catch (profileErr) {
+          if (profileErr.response?.status === 404) {
+            // No profile yet — show onboarding, don't load the rest
+            setProfileMissing(true);
+            setLoading(false);
+            return;
+          }
+          // Unexpected error — re-throw
+          throw profileErr;
+        }
+
+        // ── Step 2: Profile exists — load dashboard data ───────────────────
         const [appsRes, notifRes] = await Promise.all([
           farmerService.getApplications(),
           api.get('/notifications/unread-count').catch(() => ({ data: { unread: 0 } }))
@@ -85,6 +256,11 @@ export const Dashboard = () => {
   }, []);
 
   if (loading) return <LoadingSpinner />;
+
+  // ── Onboarding state — no profile yet ──────────────────────────────────────
+  if (profileMissing) {
+    return <OnboardingBanner userName={user?.full_name} />;
+  }
 
   const totalApps = stats.reduce((sum, s) => sum + s.value, 0);
 
@@ -135,20 +311,12 @@ export const Dashboard = () => {
 
       {/* Quick Action Panels */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-        <Link
-          to="/farmer/subsidies"
-          style={{ textDecoration: 'none' }}
-        >
+        <Link to="/farmer/subsidies" style={{ textDecoration: 'none' }}>
           <div style={{
-            background: '#fff',
-            border: '1px solid var(--gov-border)',
-            borderTop: '3px solid var(--gov-orange)',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            cursor: 'pointer',
-            transition: 'box-shadow 0.15s',
+            background: '#fff', border: '1px solid var(--gov-border)',
+            borderTop: '3px solid var(--gov-orange)', padding: '16px',
+            display: 'flex', alignItems: 'center', gap: '14px',
+            cursor: 'pointer', transition: 'box-shadow 0.15s',
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
@@ -161,20 +329,12 @@ export const Dashboard = () => {
           </div>
         </Link>
 
-        <Link
-          to="/farmer/applications"
-          style={{ textDecoration: 'none' }}
-        >
+        <Link to="/farmer/applications" style={{ textDecoration: 'none' }}>
           <div style={{
-            background: '#fff',
-            border: '1px solid var(--gov-border)',
-            borderTop: '3px solid var(--gov-navy)',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            cursor: 'pointer',
-            transition: 'box-shadow 0.15s',
+            background: '#fff', border: '1px solid var(--gov-border)',
+            borderTop: '3px solid var(--gov-navy)', padding: '16px',
+            display: 'flex', alignItems: 'center', gap: '14px',
+            cursor: 'pointer', transition: 'box-shadow 0.15s',
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
@@ -187,53 +347,37 @@ export const Dashboard = () => {
           </div>
         </Link>
 
-        <Link
-          to="/farmer/smart-recommendation"
-          style={{ textDecoration: 'none' }}
-        >
+        <Link to="/farmer/smart-recommendation" style={{ textDecoration: 'none' }}>
           <div style={{
-            background: '#fff',
-            border: '1px solid var(--gov-border)',
-            borderTop: '3px solid #1A7A1A',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            cursor: 'pointer',
-            transition: 'box-shadow 0.15s',
+            background: '#fff', border: '1px solid var(--gov-border)',
+            borderTop: '3px solid #1A7A1A', padding: '16px',
+            display: 'flex', alignItems: 'center', gap: '14px',
+            cursor: 'pointer', transition: 'box-shadow 0.15s',
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, color: 'var(--gov-navy)', fontSize: '14px' }}>Smart Crop Advisory</div>
-              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginTop: '2px' }}>AI-powered crop & yield recommendations</div>
+              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginTop: '2px' }}>AI-powered crop &amp; yield recommendations</div>
             </div>
             <ArrowRight size={16} color="#1A7A1A" />
           </div>
         </Link>
 
-        <Link
-          to="/farmer/profile"
-          style={{ textDecoration: 'none' }}
-        >
+        <Link to="/farmer/profile" style={{ textDecoration: 'none' }}>
           <div style={{
-            background: '#fff',
-            border: '1px solid var(--gov-border)',
-            borderTop: '3px solid #1A5C9C',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            cursor: 'pointer',
-            transition: 'box-shadow 0.15s',
+            background: '#fff', border: '1px solid var(--gov-border)',
+            borderTop: '3px solid #1A5C9C', padding: '16px',
+            display: 'flex', alignItems: 'center', gap: '14px',
+            cursor: 'pointer', transition: 'box-shadow 0.15s',
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, color: 'var(--gov-navy)', fontSize: '14px' }}>My Profile</div>
-              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginTop: '2px' }}>Update personal & bank details</div>
+              <div style={{ fontSize: '12px', color: 'var(--gov-text-light)', marginTop: '2px' }}>Update personal &amp; bank details</div>
             </div>
             <ArrowRight size={16} color="#1A5C9C" />
           </div>
