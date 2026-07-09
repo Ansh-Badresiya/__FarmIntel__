@@ -18,7 +18,8 @@ load_dotenv()
 
 _SERVICE_DIR = Path(__file__).resolve().parent          # .../backend/app/services
 _PROJECT_ROOT = _SERVICE_DIR.parents[2]                 # .../FarmIntel
-_CACHE_DIR = _PROJECT_ROOT / "backend" / "ml-models-cache"
+# _CACHE_DIR = _PROJECT_ROOT / "backend" / "ml-models-cache"
+_CACHE_DIR = Path("tmp/farmintel_models")
 
 # Define the exact files needed per stage based on ml_service.py
 _STAGE_FILES = {
@@ -80,25 +81,41 @@ class ModelDownloader:
             
             files = _STAGE_FILES.get(stage, [])
             for file_path in files:
-                local_path = _CACHE_DIR / file_path
+                logger.info(f"Checking '{file_path}'...")
+
+                try:
+                    downloaded_path = hf_hub_download(
+                        repo_id=self._repo_id,
+                        filename=file_path,
+                        local_dir=str(_CACHE_DIR),
+                        local_dir_use_symlinks=False,
+                        token=self._token,
+                    )
+
+                    logger.info(f"Ready: {downloaded_path}")
+
+                except Exception as e:
+                    logger.exception(f"Failed to prepare '{file_path}'")
+                    raise
+                # local_path = _CACHE_DIR / file_path
                 
-                # Check if it physically exists first so we can log a cache hit
-                if local_path.exists():
-                    logger.info(f"[CACHE HIT] {file_path} already exists locally.")
-                else:
-                    logger.info(f"[DOWNLOADING] {file_path} from Hugging Face ({self._repo_id})...")
-                    try:
-                        hf_hub_download(
-                            repo_id=self._repo_id,
-                            filename=file_path,
-                            local_dir=str(_CACHE_DIR),
-                            local_dir_use_symlinks=False,
-                            token=self._token
-                        )
-                        logger.info(f"[DOWNLOAD COMPLETE] {file_path}")
-                    except Exception as e:
-                        logger.error(f"[DOWNLOAD FAILED] Failed to download {file_path}: {e}")
-                        raise e
+                # # Check if it physically exists first so we can log a cache hit
+                # if local_path.exists():
+                #     logger.info(f"[CACHE HIT] {file_path} already exists locally.")
+                # else:
+                #     logger.info(f"[DOWNLOADING] {file_path} from Hugging Face ({self._repo_id})...")
+                #     try:
+                #         hf_hub_download(
+                #             repo_id=self._repo_id,
+                #             filename=file_path,
+                #             local_dir=str(_CACHE_DIR),
+                #             local_dir_use_symlinks=False,
+                #             token=self._token
+                #         )
+                #         logger.info(f"[DOWNLOAD COMPLETE] {file_path}")
+                #     except Exception as e:
+                #         logger.error(f"[DOWNLOAD FAILED] Failed to download {file_path}: {e}")
+                #         raise e
 
             self._downloaded_stages.add(stage)
             logger.info(f"All {stage} artifacts are ready.")

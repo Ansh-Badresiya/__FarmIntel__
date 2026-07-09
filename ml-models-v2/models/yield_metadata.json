@@ -1,7 +1,7 @@
 {
   "model_name": "FarmIntel-Stage2-YieldPrediction",
   "algorithm": "RandomForestRegressor",
-  "training_date": "2026-07-07T00:11:07",
+  "training_date": "2026-07-09T21:31:48",
   "feature_names": [
     "State",
     "District",
@@ -15,7 +15,7 @@
   "train_samples": 271481,
   "test_samples": 67871,
   "hyperparameters": {
-    "n_estimators": 200,
+    "n_estimators": 150,
     "max_depth": "None",
     "min_samples_leaf": 3,
     "n_jobs": -1,
@@ -23,10 +23,10 @@
   },
   "target_transform": "log1p (numpy) — predictions use expm1",
   "metrics": {
-    "R2": 0.914926,
-    "RMSE": 265.0941,
-    "MAE": 15.0022,
-    "MAPE": 31.3271
+    "R2": 0.915102,
+    "RMSE": 264.8193,
+    "MAE": 15.0182,
+    "MAPE": 34.0445
   },
   "sklearn_version": "1.7.2",
   "python_version": "3.10.10",
