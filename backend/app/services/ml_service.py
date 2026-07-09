@@ -24,6 +24,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from app.services.model_downloader import ModelDownloader
+
 logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -31,8 +33,9 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 _SERVICE_DIR = Path(__file__).resolve().parent          # .../backend/app/services
 _PROJECT_ROOT = _SERVICE_DIR.parents[2]                 # .../FarmIntel
-_MODELS_DIR   = _PROJECT_ROOT / "ml-models-v2" / "models"
-_DATA_DIR     = _PROJECT_ROOT / "ml-models-v2" / "data" / "processed"
+_CACHE_DIR    = ModelDownloader.get_cache_dir()         # backend/ml-models-cache
+_MODELS_DIR   = _CACHE_DIR / "models"
+_DATA_DIR     = _CACHE_DIR / "data" / "processed"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -67,6 +70,8 @@ class _ArtifactStore:
             if self._stage1_loaded:
                 return
 
+            ModelDownloader().ensure_downloaded("stage1")
+
             logger.info("Loading Stage 1 artifacts...")
             self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
             self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
@@ -90,6 +95,8 @@ class _ArtifactStore:
             if self._history_loaded:
                 return
 
+            ModelDownloader().ensure_downloaded("history")
+
             logger.info("Loading historical dataset...")
             train_csv = _DATA_DIR / "crop_train.csv"
             self.history_df: pd.DataFrame = pd.read_csv(
@@ -109,6 +116,8 @@ class _ArtifactStore:
         with self._lock:
             if self._stage3_loaded:
                 return
+            
+            ModelDownloader().ensure_downloaded("stage3")
 
             logger.info("Loading Stage 3 artifacts...")
             self.s3_model   = joblib.load(_MODELS_DIR / "yield_random_forest.pkl")
