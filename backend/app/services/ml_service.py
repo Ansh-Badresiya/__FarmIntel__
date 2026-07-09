@@ -43,8 +43,7 @@ import threading
 
 class _ArtifactStore:
     """
-    Singleton that loads all ML artifacts exactly once on first access.
-    Uses __slots__ so attribute access stays fast.
+    Singleton that loads ML artifacts lazily in stages to minimize memory usage.
     """
     _instance: Optional[_ArtifactStore] = None
     _lock = threading.Lock()
@@ -54,69 +53,75 @@ class _ArtifactStore:
             with cls._lock:
                 if cls._instance is None:
                     obj = super().__new__(cls)
-                    obj._loaded = False
+                    obj._stage1_loaded = False
+                    obj._history_loaded = False
+                    obj._stage3_loaded = False
                     cls._instance = obj
         return cls._instance
 
-    def _load(self) -> None:
-        if self._loaded:
+    def load_stage1(self) -> None:
+        if self._stage1_loaded:
             return
 
         with self._lock:
-            if self._loaded:
+            if self._stage1_loaded:
                 return
 
-            logger.info("Loading ML artifacts from %s …", _MODELS_DIR)
+            logger.info("Loading Stage 1 artifacts...")
+            self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
+            self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
+            self.s1_lbl_enc = joblib.load(_MODELS_DIR / "label_encoder.pkl")
 
-        # ── Stage 1 ───────────────────────────────────────────────────────────
-        logger.info("Loading Stage 1 model...")
-        self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
-        logger.info("Stage 1 model loaded")
-        logger.info("Loading encoder...")
-        self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
-        self.s1_lbl_enc = joblib.load(_MODELS_DIR / "label_encoder.pkl")
-        logger.info("Encoder loaded")
+            with open(_MODELS_DIR / "crop_categories.json", encoding="utf-8") as f:
+                self.s1_classes: List[str] = json.load(f)
 
-        with open(_MODELS_DIR / "crop_categories.json", encoding="utf-8") as f:
-            self.s1_classes: List[str] = json.load(f)
+            with open(_MODELS_DIR / "feature_columns.json", encoding="utf-8") as f:
+                raw = json.load(f)
+                self.s1_features: List[str] = raw if isinstance(raw, list) else raw["feature_order"]
 
-        with open(_MODELS_DIR / "feature_columns.json", encoding="utf-8") as f:
-            raw = json.load(f)
-            # feature_columns.json is either a plain list or dict with feature_order
-            self.s1_features: List[str] = raw if isinstance(raw, list) else raw["feature_order"]
+            self._stage1_loaded = True
+            logger.info("Stage 1 artifacts loaded.")
 
-        # ── Stage 2 — historical DataFrame ───────────────────────────────────
-        train_csv = _DATA_DIR / "crop_train.csv"
-        logger.info("Loading historical data from %s …", train_csv)
-        self.history_df: pd.DataFrame = pd.read_csv(
-            train_csv,
-            usecols=["State", "District", "Season", "Crop", "Crop_Category"],
-        )
-        # Normalise strings once so lookups are case-consistent
-        for col in ["State", "District", "Season", "Crop", "Crop_Category"]:
-            self.history_df[col] = self.history_df[col].astype(str).str.strip()
+    def load_history(self) -> None:
+        if self._history_loaded:
+            return
 
-        # ── Stage 3 ───────────────────────────────────────────────────────────
-        self.s3_model   = joblib.load(_MODELS_DIR / "yield_random_forest.pkl")
-        self.s3_ord_enc = joblib.load(_MODELS_DIR / "yield_ordinal_encoder.pkl")
+        with self._lock:
+            if self._history_loaded:
+                return
 
-        with open(_MODELS_DIR / "yield_feature_columns.json", encoding="utf-8") as f:
-            yfc = json.load(f)
-        self.s3_cat_features: List[str] = yfc["categorical_features"]
-        self.s3_num_features: List[str] = yfc["numerical_features"]
-        self.s3_feature_order: List[str] = yfc["feature_order"]
+            logger.info("Loading historical dataset...")
+            train_csv = _DATA_DIR / "crop_train.csv"
+            self.history_df: pd.DataFrame = pd.read_csv(
+                train_csv,
+                usecols=["State", "District", "Season", "Crop", "Crop_Category"],
+            )
+            for col in ["State", "District", "Season", "Crop", "Crop_Category"]:
+                self.history_df[col] = self.history_df[col].astype(str).str.strip()
 
-        self._loaded = True
-        logger.info("All ML artifacts loaded successfully.")
+            self._history_loaded = True
+            logger.info("Historical dataset loaded.")
 
-    # ── Public accessors (auto-load on first use) ──────────────────────────
+    def load_stage3(self) -> None:
+        if self._stage3_loaded:
+            return
 
-    @property
-    def loaded(self) -> bool:
-        return self._loaded
+        with self._lock:
+            if self._stage3_loaded:
+                return
 
-    def ensure_loaded(self) -> None:
-        self._load()
+            logger.info("Loading Stage 3 artifacts...")
+            self.s3_model   = joblib.load(_MODELS_DIR / "yield_random_forest.pkl")
+            self.s3_ord_enc = joblib.load(_MODELS_DIR / "yield_ordinal_encoder.pkl")
+
+            with open(_MODELS_DIR / "yield_feature_columns.json", encoding="utf-8") as f:
+                yfc = json.load(f)
+            self.s3_cat_features: List[str] = yfc["categorical_features"]
+            self.s3_num_features: List[str] = yfc["numerical_features"]
+            self.s3_feature_order: List[str] = yfc["feature_order"]
+
+            self._stage3_loaded = True
+            logger.info("Stage 3 artifacts loaded.")
 
 
 # Module-level singleton
@@ -162,7 +167,7 @@ class MLService:
             ]
         }
         """
-        _store.ensure_loaded()
+        _store.load_stage1()
 
         # Build input DataFrame with the exact feature order the encoder expects
         row = {
@@ -232,7 +237,7 @@ class MLService:
             ]
         }
         """
-        _store.ensure_loaded()
+        _store.load_history()
 
         df = _store.history_df
 
@@ -325,7 +330,7 @@ class MLService:
             "unit": "kg/ha"
         }
         """
-        _store.ensure_loaded()
+        _store.load_stage3()
 
         row = {
             "State":         state.strip(),
