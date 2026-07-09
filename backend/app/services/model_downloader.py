@@ -19,7 +19,7 @@ load_dotenv()
 _SERVICE_DIR = Path(__file__).resolve().parent          # .../backend/app/services
 _PROJECT_ROOT = _SERVICE_DIR.parents[2]                 # .../FarmIntel
 # _CACHE_DIR = _PROJECT_ROOT / "backend" / "ml-models-cache"
-_CACHE_DIR = Path("tmp/farmintel_models")
+_CACHE_DIR = Path("/tmp/farmintel_models")
 
 # Define the exact files needed per stage based on ml_service.py
 _STAGE_FILES = {

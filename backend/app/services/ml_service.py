@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 _SERVICE_DIR = Path(__file__).resolve().parent          # .../backend/app/services
 _PROJECT_ROOT = _SERVICE_DIR.parents[2]                 # .../FarmIntel
 _CACHE_DIR    = ModelDownloader.get_cache_dir()         # backend/ml-models-cache
-_MODELS_DIR   = _CACHE_DIR
+_MODELS_DIR   = ModelDownloader.get_cache_dir()
 _DATA_DIR     = _CACHE_DIR
 
 
@@ -71,11 +71,20 @@ class _ArtifactStore:
                 return
 
             ModelDownloader().ensure_downloaded("stage1")
+            logger.info("DOWNLOAD FINISHED FOR STAGE 1")
 
             logger.info("Loading Stage 1 artifacts...")
+            logger.info("Loading XGBoost model...")
             self.s1_model   = joblib.load(_MODELS_DIR / "crop_category_xgboost.pkl")
+            logger.info("XGBoost model loaded.")
+            
+            logger.info("Loading ordinal encoder...")
             self.s1_ord_enc = joblib.load(_MODELS_DIR / "ordinal_encoder.pkl")
+            logger.info("Ordinal encoder loaded.")
+            
+            logger.info("Loading label encoder...")
             self.s1_lbl_enc = joblib.load(_MODELS_DIR / "label_encoder.pkl")
+            logger.info("Label encoder loaded.")
 
             with open(_MODELS_DIR / "crop_categories.json", encoding="utf-8") as f:
                 self.s1_classes: List[str] = json.load(f)
@@ -177,6 +186,7 @@ class MLService:
         }
         """
         _store.load_stage1()
+        logger.info("Stage 1 loaded successfully, starting prediction...")
 
         # Build input DataFrame with the exact feature order the encoder expects
         row = {
