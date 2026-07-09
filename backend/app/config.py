@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
 
+    # ── Hugging Face ──────────────────────────────────────────────────────
+    HF_TOKEN: str | None = None
+    HF_REPO_ID: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

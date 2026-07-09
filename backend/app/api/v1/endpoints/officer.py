@@ -71,10 +71,6 @@ def list_applications(
     Officers receive their own queue (filtered by assigned_officer).
     Admins receive the global unfiltered list.
     """
-    officer_filter: Optional[UUID] = None
-    if current_user.role == UserRole.officer:
-        officer_filter = current_user.id
-
     from app.models.subsidy_application import SubsidyApplication
     from app.models.farmer import Farmer
     from app.models.subsidy_scheme import SubsidyScheme
@@ -83,9 +79,6 @@ def list_applications(
         .join(Farmer, SubsidyApplication.farmer_id == Farmer.id)\
         .join(User, Farmer.user_id == User.id)\
         .join(SubsidyScheme, SubsidyApplication.scheme_id == SubsidyScheme.id)
-    
-    if officer_filter:
-        query = query.filter(SubsidyApplication.assigned_officer == officer_filter)
         
     if status:
         query = query.filter(SubsidyApplication.status == status)

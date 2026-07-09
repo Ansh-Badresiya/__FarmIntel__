@@ -10,15 +10,19 @@ export const AuthProvider = ({ children }) => {
   // Load user from API if token exists
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('access_token');
+      const token = sessionStorage.getItem('access_token');
       if (token) {
         try {
           // Verify token and get user info
           const response = await api.get('/auth/me');
           setUser(response.data);
         } catch (error) {
-          console.error('Session expired or invalid token');
-          localStorage.removeItem('access_token');
+          if (error.response && error.response.status === 401) {
+            console.error('Session expired or invalid token');
+            sessionStorage.removeItem('access_token');
+          } else {
+            console.error('Network error or server restarting, keeping token');
+          }
         }
       }
       setLoading(false);
@@ -31,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { access_token } = response.data;
-      localStorage.setItem('access_token', access_token);
+      sessionStorage.setItem('access_token', access_token);
       
       // Fetch user profile immediately after login
       const userRes = await api.get('/auth/me');
@@ -53,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
     setUser(null);
   };
 
