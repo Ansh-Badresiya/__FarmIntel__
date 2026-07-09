@@ -36,11 +36,13 @@ Response shape:
 }
 """
 
+from PIL.Image import logger
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Any, List, Optional
 from pydantic import BaseModel
 import traceback
+import logging
 
 from app.db.session import get_db
 from app.models.user import User, UserRole
@@ -83,6 +85,7 @@ def unified_recommend(
     - Predicted yield for each crop (Stage 3 — Random Forest)
     - A globally sorted top-crops list across all categories
     """
+    logger.warning("===== RECOMMEND ENDPOINT HIT =====")
     profile = service.get_profile(current_user.id)
 
     loc_state    = req.state    or (profile.state    if profile else None)
