@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 _SERVICE_DIR = Path(__file__).resolve().parent          # .../backend/app/services
 _PROJECT_ROOT = _SERVICE_DIR.parents[2]                 # .../FarmIntel
 _CACHE_DIR    = ModelDownloader.get_cache_dir()         # backend/ml-models-cache
-_MODELS_DIR   = _CACHE_DIR / "models"
-_DATA_DIR     = _CACHE_DIR / "data" / "processed"
+_MODELS_DIR   = _CACHE_DIR
+_DATA_DIR     = _CACHE_DIR
 
 
 # ─────────────────────────────────────────────────────────────────────────────

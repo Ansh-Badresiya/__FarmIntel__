@@ -23,19 +23,19 @@ _CACHE_DIR = _PROJECT_ROOT / "backend" / "ml-models-cache"
 # Define the exact files needed per stage based on ml_service.py
 _STAGE_FILES = {
     "stage1": [
-        "models/crop_category_xgboost.pkl",
-        "models/ordinal_encoder.pkl",
-        "models/label_encoder.pkl",
-        "models/crop_categories.json",
-        "models/feature_columns.json",
+        "crop_category_xgboost.pkl",
+        "ordinal_encoder.pkl",
+        "label_encoder.pkl",
+        "crop_categories.json",
+        "feature_columns.json",
     ],
     "history": [
-        "data/processed/crop_train.csv",
+        "crop_train.csv",
     ],
     "stage3": [
-        "models/yield_random_forest.pkl",
-        "models/yield_ordinal_encoder.pkl",
-        "models/yield_feature_columns.json",
+        "yield_random_forest.pkl",
+        "yield_ordinal_encoder.pkl",
+        "yield_feature_columns.json",
     ]
 }
 
