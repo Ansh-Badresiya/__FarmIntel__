@@ -3,11 +3,13 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ErrorAlert } from '../../components/shared/ErrorAlert';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export const Login = () => {
   const { login, user } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
@@ -26,167 +28,98 @@ export const Login = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--gov-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      {/* Top Orange Strip */}
-      <div className="gov-top-strip" style={{ textAlign: 'center' }}>
-        FarmIntel — Smart Agriculture Decision Support System
+    <div className="w-full flex flex-col items-center">
+      <div className="w-full text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+        <p className="text-gray-500 font-medium">Log in to your FarmIntel account</p>
       </div>
 
-      {/* Header Banner */}
-      <div style={{
-        background: 'var(--gov-navy)',
-        padding: '20px 0',
-        textAlign: 'center',
-        borderBottom: '4px solid var(--gov-orange)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            background: 'var(--gov-orange)',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px',
-          }}>
-            🌾
-          </div>
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#fff', letterSpacing: '0.5px' }}>
-              FarmIntel
-            </div>
-            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
-              Agricultural Subsidy Management System
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="w-full">
+        {error && <div className="mb-6"><ErrorAlert message={error} /></div>}
 
-      {/* Login Form Container */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 16px',
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '440px',
-        }}>
-          {/* Form Card */}
-          <div className="gov-card" style={{ overflow: 'hidden' }}>
-            {/* Card Header */}
-            <div style={{
-              background: 'var(--gov-navy)',
-              padding: '14px 20px',
-              borderBottom: '2px solid var(--gov-orange)',
-            }}>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                📋 Farmer Login
-              </h2>
-              <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
-                Sign in to access your account
-              </p>
-            </div>
-
-            {/* Form Body */}
-            <div style={{ padding: '24px 20px' }}>
-              <ErrorAlert message={error} />
-
-              <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="gov-form-group">
-                  <label className="gov-label">Email Address <span style={{ color: '#C0392B' }}>*</span></label>
-                  <input
-                    type="email"
-                    {...register('email', { required: 'Email is required' })}
-                    className="gov-input"
-                    placeholder="Enter registered email"
-                    id="login-email"
-                  />
-                  {errors.email && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.email.message}</p>}
-                </div>
-
-                <div className="gov-form-group">
-                  <label className="gov-label">Password <span style={{ color: '#C0392B' }}>*</span></label>
-                  <input
-                    type="password"
-                    {...register('password', { required: 'Password is required' })}
-                    className="gov-input"
-                    placeholder="Enter password"
-                    id="login-password"
-                  />
-                  {errors.password && <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#C0392B' }}>{errors.password.message}</p>}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="gov-btn gov-btn-primary"
-                  id="login-submit"
-                  style={{ width: '100%', padding: '10px', fontSize: '14px', marginTop: '4px' }}
-                >
-                  {isSubmitting ? '⏳ Signing in...' : '🔐 Sign In'}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div style={{ margin: '20px 0', borderTop: '1px solid var(--gov-border)', position: 'relative', textAlign: 'center' }}>
-                <span style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: '#fff',
-                  padding: '0 12px',
-                  fontSize: '12px',
-                  color: 'var(--gov-text-muted)',
-                }}>
-                  New User?
-                </span>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="login-email">
+              Email Address
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Mail className="h-5 w-5 text-gray-400" />
               </div>
-
-              <Link
-                to="/register"
-                className="gov-btn gov-btn-outline"
-                style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px', textDecoration: 'none' }}
-              >
-                Register as Farmer
-              </Link>
+              <input
+                type="email"
+                id="login-email"
+                {...register('email', { required: 'Email is required' })}
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-all"
+                placeholder="Enter your email"
+              />
             </div>
+            {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
           </div>
 
-          {/* Notice */}
-          <div style={{
-            marginTop: '16px',
-            padding: '12px 14px',
-            background: '#FFF8E1',
-            border: '1px solid #FFE082',
-            borderRadius: '4px',
-            fontSize: '12px',
-            color: '#7B6000',
-          }}>
-            <strong>📌 Note:</strong> This portal is only for registered farmers, field officers, and administrators. 
-            For assistance, contact your local agriculture department.
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="login-password">
+              Password
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Lock className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="login-password"
+                {...register('password', { required: 'Password is required' })}
+                className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm transition-all"
+                placeholder="••••••••"
+              />
+              <div 
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </div>
+            </div>
+            {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>}
           </div>
+
+          {/* <div className="flex items-center justify-between pt-1 pb-2">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                Remember me
+              </label>
+            </div>
+
+            <div className="text-sm">
+              <a href="#" className="font-semibold text-green-600 hover:text-green-500 transition-colors">
+                Forgot password?
+              </a>
+            </div>
+          </div> */}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-all"
+          >
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
+            {!isSubmitting && <ArrowRight size={18} />}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-semibold text-green-600 hover:text-green-500 transition-colors">
+              Create an account
+            </Link>
+          </p>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        background: 'var(--gov-navy)',
-        color: 'rgba(255,255,255,0.6)',
-        textAlign: 'center',
-        padding: '12px',
-        fontSize: '12px',
-      }}>
-        © FarmIntel. All Rights Reserved. | v1.0
       </div>
     </div>
   );

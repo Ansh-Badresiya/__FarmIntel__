@@ -33,7 +33,7 @@ export const Navbar = () => {
     if (user) {
       const fetchNotifs = async () => {
         try {
-          const res = await api.get('/notifications');
+          const res = await api.get('/notifications/');
           setNotifications(res.data);
           setUnreadCount(res.data.filter(n => !n.is_read).length);
         } catch (e) {

@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import heroBg from '../assets/hero_bg.png';
+import { motion } from 'framer-motion';
 import { 
   Sprout, 
   ShieldCheck, 
@@ -11,6 +13,17 @@ import {
   ChevronDown,
   BookOpen
 } from 'lucide-react';
+
+const FadeInUp = ({ children, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 50 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    transition={{ duration: 0.6, delay, ease: "easeOut" }}
+  >
+    {children}
+  </motion.div>
+);
 
 export const Landing = () => {
   const aboutRef = useRef(null);
@@ -32,10 +45,10 @@ export const Landing = () => {
       {/* Top green strip */}
       <div className="gov-top-strip" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px', background: 'var(--gov-navy)' }}>
         <span style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>
-          FarmIntel — Smart Agriculture Decision Support System
+          FarmIntel — Empowering Farmers with Intelligent Agriculture
         </span>
         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>
-          Academic Research Project
+          Crop Recommendation • Yield Prediction • Digital Subsidy Management
         </span>
       </div>
 
@@ -110,8 +123,10 @@ export const Landing = () => {
 
       {/* Hero Section */}
       <section style={{
-        background: 'linear-gradient(135deg, #E8F5E9 0%, #D8F3DC 100%)',
-        padding: '80px 24px',
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url(${heroBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '100px 24px',
         textAlign: 'center',
         borderBottom: '1px solid var(--gov-border)'
       }}>
@@ -128,64 +143,70 @@ export const Landing = () => {
             letterSpacing: '1px',
             marginBottom: '16px'
           }}>
-            Next-Gen Agricultural Analytics
+            Unified Agriculture Platform
           </span>
           <h1 style={{
             fontSize: '42px',
             fontWeight: 800,
-            color: 'var(--gov-navy)',
+            color: '#ffffff',
             margin: '0 0 16px',
-            lineHeight: 1.2
+            lineHeight: 1.2,
+            textShadow: '0 2px 4px rgba(0,0,0,0.4)'
           }}>
-            Optimize Farming Yields & Seamlessly Manage Subsidies
+            Smarter Farming. Better Decisions. Greater Benefits.
           </h1>
           <p style={{
             fontSize: '18px',
-            color: 'var(--gov-text-light)',
+            color: 'rgba(255, 255, 255, 0.95)',
             margin: '0 0 32px',
-            lineHeight: 1.6
+            lineHeight: 1.6,
+            textShadow: '0 1px 3px rgba(0,0,0,0.3)'
           }}>
-            FarmIntel integrates predictive artificial intelligence for crop recommendations, expected yield forecasting, and a secure dashboard system for subsidy eligibility & verification.
+            An end-to-end farmer platform combining subsidy management, crop recommendation, and yield prediction using machine learning.
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => scrollTo(featuresRef)}
               className="gov-btn gov-btn-outline" 
               style={{ padding: '12px 28px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               Explore Features <ChevronDown size={18} />
-            </button>
-            <Link 
-              to="/login" 
-              className="gov-btn gov-btn-primary" 
-              style={{ padding: '12px 28px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              Access Portal <ChevronRight size={18} />
-            </Link>
+            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link 
+                to="/login" 
+                className="gov-btn gov-btn-primary" 
+                style={{ padding: '12px 28px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', height: '100%' }}
+              >
+                Access Portal <ChevronRight size={18} />
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
       <section ref={aboutRef} style={{ padding: '60px 24px', background: '#fff', borderBottom: '1px solid var(--gov-border)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <FadeInUp>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--gov-navy)', margin: 0 }}>
               About FarmIntel
             </h2>
             <p style={{ fontSize: '15px', color: 'var(--gov-text-light)', marginTop: '8px' }}>
-              A comprehensive decision support system built to bridge data and farming.
+              Empowering farmers with data-driven decisions through intelligent subsidy management and predictive agriculture.
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: '15px', lineHeight: 1.6, color: 'var(--gov-text-light)', margin: '0 0 16px' }}>
-                FarmIntel is an academic initiative designed to modernize agricultural management. By combining data-driven crop analysis with digital workflows, the platform provides actionable insights for every level of the agricultural process.
-              </p>
+                FarmIntel is an end-to-end smart agriculture platform that combines farmer subsidy management with machine learning-powered crop recommendation and yield prediction. It simplifies agricultural decision-making by integrating digital services, predictive models, and a secure role-based management system into one unified platform.              </p>
               <p style={{ fontSize: '15px', lineHeight: 1.6, color: 'var(--gov-text-light)', margin: 0 }}>
-                Farmers gain direct access to state-of-the-art predictive tools to decide what to grow based on regional climate history, while field officers and administrators enjoy automated criteria checking and clean digital application processing.
+                Farmers receive personalized crop recommendations and expected yield forecasts, while officers and administrators can efficiently manage subsidy verification, application processing, and eligibility evaluation through an automated workflow, ensuring transparency and faster service delivery.              
               </p>
             </div>
 
@@ -195,11 +216,23 @@ export const Landing = () => {
               </h3>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', listStyle: 'none', padding: 0, margin: 0 }}>
                 {[
-                  'Farmer submits region details (State, District, Season).',
-                  'ML pipeline runs historical predictions on climate and soil suitability.',
-                  'System renders top recommended crop suggestions and expected yields.',
-                  'Farmer reviews eligibility and submits digital subsidy applications.',
-                  'Verification rules automatically flag exceptions for fast officer review.'
+                  // 'Enter farm location and season.',
+                  // 'ML analyzes historical agricultural data.',
+                  // 'Generate crop and yield predictions.',
+                  // 'Submit subsidy applications digitally.',
+                  // 'Officer verifies and processes requests.',
+                  // -------------------------------------------------
+                  // 'Farmer submits farm location and cultivation details.',
+                  // 'Machine learning identifies the most suitable crops.',
+                  // 'The platform forecasts expected crop yields.',
+                  // 'Farmers apply for eligible subsidy schemes online.',
+                  // 'Officers validate applications through a secure workflow.',
+                  // -------------------------------------------------
+                  'Farmers register their agricultural details, including location and seasonal information, to receive personalized recommendations.',
+                  'FarmIntel uses machine learning models to identify suitable crop categories from historical agricultural datasets.',
+                  'The system recommends the best crops and forecasts their expected yields for better cultivation planning.',
+                  'Farmers can discover eligible subsidy schemes, complete digital applications, and track their application status.',
+                  'Officers verify applications using an automated eligibility engine, while administrators manage schemes and platform operations.'
                 ].map((step, idx) => (
                   <li key={idx} style={{ display: 'flex', gap: '10px', fontSize: '13px', color: 'var(--gov-text)' }}>
                     <span style={{
@@ -216,11 +249,13 @@ export const Landing = () => {
             </div>
           </div>
         </div>
+        </FadeInUp>
       </section>
 
       {/* Key Features Section */}
       <section ref={featuresRef} style={{ padding: '60px 24px', background: 'var(--gov-bg)', borderBottom: '1px solid var(--gov-border)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <FadeInUp>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--gov-navy)', margin: 0 }}>
               Key Features
@@ -232,7 +267,7 @@ export const Landing = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
             {/* Feature 1 */}
-            <div className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
                 width: '48px', height: '48px', background: 'var(--gov-orange-light)', color: 'var(--gov-orange)',
                 borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -241,16 +276,16 @@ export const Landing = () => {
               </div>
               <div>
                 <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)' }}>
-                  Smart Crop AI Advisory
+                  Intelligent Farming Advisor
                 </h3>
                 <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--gov-text-light)' }}>
-                  Leverage machine learning to predict the most profitable crop categories and specific crop variants based on season and region.
+                  Empower farmers with personalized crop recommendations and yield predictions powered by machine learning and historical insights.
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 2 */}
-            <div className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
                 width: '48px', height: '48px', background: 'var(--gov-orange-light)', color: 'var(--gov-orange)',
                 borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -259,16 +294,16 @@ export const Landing = () => {
               </div>
               <div>
                 <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)' }}>
-                  Subsidy Eligibility Engine
+                  Smart Subsidy Evaluation
                 </h3>
                 <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--gov-text-light)' }}>
-                  Automate compliance checks against system-configured rules such as land ownership, regional specifications, and crop categories.
+                  Digitally verify subsidy eligibility through automated validation rules, reducing manual effort and improving transparency.
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 3 */}
-            <div className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} className="gov-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
                 width: '48px', height: '48px', background: 'var(--gov-orange-light)', color: 'var(--gov-orange)',
                 borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -277,20 +312,22 @@ export const Landing = () => {
               </div>
               <div>
                 <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)' }}>
-                  Three-Tier Portal
+                  Unified User Portal
                 </h3>
                 <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--gov-text-light)' }}>
-                  Tailored dashboards for Farmers (applications & advisory), Officers (queues & review verification), and Admins (schemes, users & rule builder).
+                  A centralized platform connecting Farmers, Officers, and Admins through streamlined dashboards and efficient digital workflows.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
+        </FadeInUp>
       </section>
 
       {/* Benefits Section */}
       <section style={{ padding: '60px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <FadeInUp>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--gov-navy)', margin: 0 }}>
               Benefits for All Roles
@@ -302,16 +339,16 @@ export const Landing = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
             {/* Farmer */}
-            <div style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={18} color="var(--gov-orange)" /> Farmers
               </h3>
               <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[
-                  'Instant predictive crop advisories',
-                  'Clean visual layout for subsidy schemes',
-                  'Real-time status tracking and notifications',
-                  'Simple document upload workflow'
+                  'Personalized crop recommendations',
+                  'Expected yield predictions',
+                  'Online subsidy applications',
+                  'Live status notifications'
                 ].map((item, idx) => (
                   <li key={idx} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--gov-text-light)' }}>
                     <CheckCircle2 size={16} color="var(--gov-orange)" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -319,19 +356,19 @@ export const Landing = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Officer */}
-            <div style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={18} color="var(--gov-orange)" /> Field Officers
               </h3>
               <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[
-                  'Unified queue for incoming applications',
-                  'Clear sectioned display of farmer profiles',
-                  'Automatic rule violation flags',
-                  'Easy Approve/Reject/Request Info triggers'
+                  'Application verification dashboard',
+                  'Rule-based eligibility checks',
+                  'Secure document review',
+                  'Faster approval workflow'
                 ].map((item, idx) => (
                   <li key={idx} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--gov-text-light)' }}>
                     <CheckCircle2 size={16} color="var(--gov-orange)" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -339,19 +376,19 @@ export const Landing = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Admin */}
-            <div style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
+            <motion.div whileHover={{ y: -5, boxShadow: '0 8px 16px rgba(0,0,0,0.08)' }} transition={{ duration: 0.2 }} style={{ padding: '20px', border: '1px solid var(--gov-border)', borderRadius: '6px', background: 'var(--gov-bg)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--gov-navy)', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={18} color="var(--gov-orange)" /> Administrators
               </h3>
               <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[
-                  'Direct management of subsidy schemes',
-                  'User role configuration and overview',
-                  'Structured form-based rule building',
-                  'System-wide metrics and charts'
+                  'Manage users and subsidy schemes',
+                  'Configure eligibility policies',
+                  'Monitor system performance',
+                  'Access operational insights'
                 ].map((item, idx) => (
                   <li key={idx} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: 'var(--gov-text-light)' }}>
                     <CheckCircle2 size={16} color="var(--gov-orange)" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -359,28 +396,147 @@ export const Landing = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           </div>
         </div>
+        </FadeInUp>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        background: 'var(--gov-navy)',
-        color: 'rgba(255,255,255,0.7)',
-        textAlign: 'center',
-        padding: '24px 20px',
-        fontSize: '13px',
-        marginTop: 'auto',
-        borderTop: '3px solid var(--gov-orange)'
-      }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-          <span>© FarmIntel. All Rights Reserved. | Academic Research Project v1.0</span>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <Link to="/login" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>Login</Link>
-            <span style={{ color: 'rgba(255,255,255,0.4)' }}>|</span>
-            <span style={{ color: 'rgba(255,255,255,0.8)' }}>Vite + Fast API + PyTorch</span>
+      <footer
+        style={{
+          background: "#0F172A",
+          color: "#E5E7EB",
+          padding: "60px 0 25px",
+          marginTop: "80px",
+          borderTop: "4px solid #16A34A",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "0 30px",
+          }}
+        >
+
+          {/* Top Section */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 1fr 1fr 1fr",
+              gap: "50px",
+            }}
+          >
+
+            {/* Brand */}
+            <div>
+              <h2
+                style={{
+                  color: "#fff",
+                  marginBottom: "15px",
+                }}
+              >
+                🌱 FarmIntel
+              </h2>
+
+              <p
+                style={{
+                  lineHeight: 1.8,
+                  color: "#CBD5E1",
+                }}
+              >
+                An intelligent agriculture platform combining
+                machine learning, crop recommendation,
+                yield prediction, and digital subsidy
+                management into one unified ecosystem.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 style={{ color: "#fff", marginBottom: 20 }}>
+                Quick Links
+              </h4>
+
+              <p><a href="/learn-more">About</a></p>
+              <p><a href="/login">Login</a></p>
+              <p><a href="/">Home</a></p>
+              <p><a href="/dashboard">Dashboard</a></p>
+            </div>
+
+            {/* Technologies */}
+            <div>
+              <h4 style={{ color: "#fff", marginBottom: 20 }}>
+                Technologies
+              </h4>
+
+              <p>React</p>
+              <p>FastAPI</p>
+              <p>PostgreSQL</p>
+              <p>Scikit-learn</p>
+              <p>Docker</p>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 style={{ color: "#fff", marginBottom: 20 }}>
+                Connect
+              </h4>
+
+              <p>
+                <a
+                  href="https://github.com/Ansh-Badresiya"
+                  target="_blank"
+                >
+                  GitHub
+                </a>
+              </p>
+
+              <p>
+                <a
+                  href="https://www.linkedin.com/in/ansh-badresiya/"
+                  target="_blank"
+                >
+                  LinkedIn
+                </a>
+              </p>
+
+              <p>
+                <a href="mailto:anshbadresiya284@gmail.com">
+                  info@farmintel.com
+                </a>
+              </p>
+            </div>
+
           </div>
+
+          {/* Bottom */}
+          <hr
+            style={{
+              borderColor: "#334155",
+              margin: "35px 0 20px",
+            }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              color: "#94A3B8",
+              fontSize: "14px",
+            }}
+          >
+            <span>
+              © {new Date().getFullYear()} FarmIntel. All rights reserved.
+            </span>
+
+            <span>
+              Built with React • FastAPI • PostgreSQL • Docker • Machine Learning
+            </span>
+          </div>
+
         </div>
       </footer>
     </div>

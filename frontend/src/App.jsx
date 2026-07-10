@@ -7,7 +7,9 @@ import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { PrivateRoute } from './components/shared/PrivateRoute';
 import { DashboardLayout } from './components/layout/DashboardLayout';
+import { AuthLayout } from './components/layout/AuthLayout';
 import { Landing } from './pages/Landing';
+import { LearnMore } from './pages/LearnMore';
 
 // Farmer Pages
 import { Dashboard as FarmerDashboard } from './pages/Farmer/Dashboard';
@@ -45,8 +47,10 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
 
           {/* Protected Routes inside Dashboard Layout */}
           <Route element={<DashboardLayout />}>
